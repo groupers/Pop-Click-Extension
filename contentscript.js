@@ -17,7 +17,7 @@ var i = -2;
 //Adding extra properties
 var btnabox = 10;
 
-chrome.runtime.sendMessage( {msg: "this is a content message"}, function(b){
+chrome.runtime.sendMessage({msg: "this is a content message"}, function(b) {
     console.log('This is the content script talking about the call back : ' + b.backgroundMsg);
 });
 
@@ -26,45 +26,61 @@ String.prototype.splice = function(idx, rem, str) {
     return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
 };
 
+// Array Remove - By John Resig (MIT Licensed)
+Array.prototype.remove = function(from, to) {
+  var rest = this.slice((to || from) + 1 || this.length);
+  this.length = from < 0 ? this.length + from : from;
+  return this.push.apply(this, rest);
+};
+
 // Generate DOM element <p>
-function e(elementShort,text,href,ID,classname){
+function e(elementShort, text, href, ID, classname, order) {
 	var returnvalue = "";
+	text = text.trim();
+	if (text.length == 0) return ;
 	if (typeof ID === 'undefined') { ID = ''; }
 	if (typeof href === 'undefined') { href = ''; }
-	if (typeof classname === 'undefined') {classname = ''; }
-	switch(elementShort){
+	if (typeof classname === 'undefined') { classname = ''; }
+	if (typeof order === 'undefined') { order = ''; }
+	switch(elementShort) {
 		case 0:
-	     returnvalue = "<p>"+text+"</p>";
-	     break;
+	      returnvalue = "<p>" + text + "</p>";
+	      break;
 	    case 1:// set 2 options
-		 returnvalue = (ID === "")? '<a href="'+href+'">'+text+"</a>" : '<a id="'+ID+'" href="'+href+'">'+text+'</a>'
-		 break;
+	      if (text.length > 25) {
+		   text = text.substring(0,25)+"..." ;
+		  }
+		  if (order) {
+		  	text +="<span>["+order+"]</span>";
+		  }
+		  returnvalue = (ID === "")? '<a href="' + href +'">' + text + "</a>" : '<a id="' + ID + '" href="' + href +'">' + text + '</a>'
+		  break;
 	    case 2:
-	     returnvalue = (ID === "")? '<div>'+text+"</div>" : '<div id="'+ID+'">'+text+'</div>'
-	     break;
+	      returnvalue = (ID === "")? '<div>' + text + "</div>" : '<div id="' + ID + '">' + text + '</div>'
+	      break;
 	    case 4:
-	     returnvalue ='<ul>'+text+'</ul>'
-	     break;
+	      returnvalue ='<ul>' + text + '</ul>'
+	      break;
 	    case 5:
-	     returnvalue = '<li>'+text+'</li>'
-	     break;
-	     case 6:
-	     returnvalue = '<a id="'+ID+'" onclick="'+href+'">'+text+'</a>'
-	     break;
+	      returnvalue = '<li>' + text + '</li>'
+	      break;
+	    case 6:
+	      returnvalue = '<a id="' + ID + '" onclick="' + href +'">' + text + '</a>'
+	      break;
 	    case 10:
-	    return
+	      return
 	    default:
-	     returnvalue = text;
-	     break;
+	      returnvalue = text;
+	      break;
 	}
-	if(classname){
-		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0,' class="'+classname+'"');
+	if(classname) {
+		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' class="' + classname + '"');
 	}
 	return returnvalue;
 }
 
-function containsKey(map,key){
-	for ( var prop in map ) {
+function containsKey(map, key){
+	for (var prop in map) {
 	     if(prop === key){
 	     	return true;
 	     }
@@ -80,21 +96,23 @@ str.sort()
 console.log(str);
 console.log("\n after");
 var pointer = 1;
-if(str.length == 2 ){
-	for ( i=0; i< str.length; i++){
-		if(str[pointer-1].href === str[pointer].href){
-			str.pop(pointer);
-		}else{
-			pointer++;
-		}
-		if(str[pointer-1].title.length > 20 ){
-			str[pointer-1].shorttitle = "substring" ;
+console.log(str.length+"length");
+if(str.length >= 2) {
+	for (i=0; i< str.length; i++) {
+		// console.log(str[i].href);
+		if(/javascript(\(.*\)|:).*/.test(str[i].href)) {
+			// console.log(str[i].href);
+			str.remove(i);
+			i--;
 		}
 	}
 }
+console.log(str.length+"length");
 var string = "";
-for (i=0; i< str.length; i++){
-	string += e(a,str[i].text,str[i].href,"","btnabox");
+for (i=0; i< str.length; i++) {
+				console.log(str[i].href);
+
+	string += e(a,str[i].text, str[i].href, "", "btnabox", i+1);
 }
 
 // If no text nor title find end half of the url :
@@ -110,27 +128,27 @@ for (i=0; i< str.length; i++){
 
 console.log(str);
 
-var div=document.createElement("div"); 
+var div = document.createElement("div"); 
 document.body.appendChild(div); 
-div.id="TheDialogBox"
-div.innerHTML=e(d,string,"default","ButtonCollection","btncollector");
+div.id = "TheDialogBox"
+div.innerHTML = e(d,e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
+div.innerHTML += e(d,string,"default", "ButtonCollection", "btncollector");
+div.innerHTML += e(d,"default","","DialogBoxFoot","dialogBoxFoot");
 div.style.position = "float";
 div.style.left = "50px";
 div.style.display = "none";
-div.innerHTML +=e(ac,"(X) Close","closingBtnCollector()","ClosingBtnCollector","closingCollector");
 
 // Observer for when the div element has it's class attribute altered
-var observer = new MutationObserver( function( mutations ){
-    mutations.forEach( function( mutation ){
+var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
         // Was it the style attribute that changed? (Maybe a classname or other attribute change could do this too? You might want to remove the attribute condition) Is display set to 'none'?
-        if( window.getComputedStyle( div ).getPropertyValue( 'display' ) !== 'none' && mutation.attributeName === 'style'
-          ){
+        if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' && mutation.attributeName === 'style') {
             console.log('display attribute changed to not none');
         }
     });
 });
 
-observer.observe( div, { attributes: true } );
+observer.observe(div, { attributes: true });
 
 // Injecting script 
 var s = document.createElement('script');
