@@ -37,7 +37,7 @@ Array.prototype.remove = function(from, to) {
 function e(elementShort, text, href, ID, classname, order) {
 	var returnvalue = "";
 	text = text.trim();
-	if (text.length == 0) return ;
+	if (text.length == 0 || typeof text === 'undefined') return ;
 	if (typeof ID === 'undefined') { ID = ''; }
 	if (typeof href === 'undefined') { href = ''; }
 	if (typeof classname === 'undefined') { classname = ''; }
@@ -51,7 +51,7 @@ function e(elementShort, text, href, ID, classname, order) {
 		   text = text.substring(0,25)+"..." ;
 		  }
 		  if (order) {
-		  	text +="<span>["+order+"]</span>";
+		  	text +="<span> ["+order%10+"]</span>";
 		  }
 		  returnvalue = (ID === "")? '<a href="' + href +'">' + text + "</a>" : '<a id="' + ID + '" href="' + href +'">' + text + '</a>'
 		  break;
@@ -109,22 +109,45 @@ if(str.length >= 2) {
 }
 console.log(str.length+"length");
 var string = "";
+var inListElements = 1;
 for (i=0; i< str.length; i++) {
-				console.log(str[i].href);
-
-	string += e(a,str[i].text, str[i].href, "", "btnabox", i+1);
+	var text = "";
+	// if(str[i].text.length == 0 && str[i].title != "") {
+	// 	text = str[i].title;
+	// }else {
+		text = str[i].text;
+	// }
+	  	var currentElement = e(a, text, str[i].href, "", "btnabox", inListElements);
+	  	// Verifies if the element exists, in case some how in the handling something went wrong.
+	  	//Problem when the anchor tag starts with # for some reason.
+	  	//Example: https://developer.chrome.com/extensions/content_scripts#pi
+		if(currentElement || currentElement != ""){
+			string += currentElement;
+			++inListElements;
+		}
 }
 
+//Hashmap text:href
+var listofnameElements = ""
+for (i = 0; i < 250 && i < document.getElementsByTagName('a').length; i++){
+listofnameElements += document.getElementsByTagName('a')[i].text.trim()+" ,";
+}
+listofnameElements += "element";
 // If no text nor title find end half of the url :
 // /something/ or /something
 // #something
 
 //Remove elements with href starting with javascript
 
+//When dialogOpen and shift key pressed, click action on inputfield
+
+//Make a color for a different category of elements for the backgrounds
+
+
 // Backend processing on python
 // When multiple text or href seem to have similar substrings remove uncommons
 // If url contains mean URI followed by /# Remove from list :=> Put it in the list of unwanted
-
+var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst data-list="'+listofnameElements+'" autocomplete="on" />';
 
 console.log(str);
 
@@ -132,8 +155,8 @@ var div = document.createElement("div");
 document.body.appendChild(div); 
 div.id = "TheDialogBox"
 div.innerHTML = e(d,e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
-div.innerHTML += e(d,string,"default", "ButtonCollection", "btncollector");
-div.innerHTML += e(d,"default","","DialogBoxFoot","dialogBoxFoot");
+div.innerHTML += e(d, string, "default", "ButtonCollection", "btncollector");
+div.innerHTML += e(d,inputfield,"DialogBoxFoot","dialogBoxFoot");
 div.style.position = "float";
 div.style.left = "50px";
 div.style.display = "none";

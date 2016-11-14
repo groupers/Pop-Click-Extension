@@ -5,10 +5,10 @@
   -moz-border-radius: 6;
   border-radius: 6px;
   font-family: Arial;
-  color: white;
-  letter-spacing: 1px;
+  color: white !important;
+  letter-spacing: 0.5px;
   word-spacing: .1em;
-  font-size: 20px;
+  font-size: 17px;
   margin: 1px;
   padding: 10px 17px 10px 20px;
   text-decoration: none;
@@ -18,7 +18,10 @@
   vertical-align: middle; 
   border: 3px;
 }
-
+.btnabox > span {
+  font-size: 15px;
+  color: rgb(255,255,240);
+}
 .btnabox:hover {
   background: #3cb0fd;
   color:white;
@@ -63,7 +66,7 @@
   left: 0;
   right: 0;
   bottom: 300px;
-  height: 300px;
+  height: 250px;
   width:800px;
   margin:0 auto;
   background-color: rgba(255,255,255,0.9);

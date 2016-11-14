@@ -40,7 +40,7 @@ function findElementFromPath(path) {
 		var mainIterator = 0; var innerIterator = 0;
 		var arrayOfPath = path.split("\u003e");
 		var currentNodeList = document.getElementsByTagName('html')[0];
-		if (currentNodeList.localName === arrayOfPath[0]){
+		if (currentNodeList.localName === arrayOfPath[0]) {
 			++mainIterator;
 			while(false != true) {
 				var oldIterator = mainIterator;
@@ -54,7 +54,7 @@ function findElementFromPath(path) {
 								if(/[a-zA-Z]+(:eq\(\d+\))/.test(arrayOfPath[mainIterator])) {  
 									currentSplit = arrayOfPath[mainIterator].split(/(:eq\(|\))/);
 									currentSplit[2] = parseInt(currentSplit[2]);
-									if (currentNodeList[i]){
+									if (currentNodeList[i]) {
 
 										if(currentSplit[0] === currentNodeList[i].localName.toLowerCase()) {
 
@@ -89,25 +89,52 @@ function findElementFromPath(path) {
 			}
 
 		}
+
+var input = document.getElementById('AwesompleteInputfield');
+// new Awesomplete(input, {
+// 	list: ["Ada", "Java", "JavaScript", "Brainfuck", "LOLCODE", "Node.js", "Ruby on Rails"]
+// });
 function closingBtnCollector() {
 	document.getElementById('TheDialogBox').style.display = 'none';
+	dialogBoxVisible = !dialogBoxVisible;
 }
 var dialogBoxVisible = false;
+var inputfieldShiftFocusing = false;
+var zeroToNine = []
+var btnaboxElements = document.getElementById('ButtonCollection');
+var fortyEightPlusTen = []
+
+if (btnaboxElements) {
+	btnaboxElements = btnaboxElements.childNodes;
+	fortyEightPlusTen = Array.apply(null, {length: btnaboxElements.length+1}).map(Number.call, function(x) { return x + 48; });
+}
+
 function KeyPress(e) {
       var evtobj = window.event? event : e
-      if (evtobj.keyCode == 80 && evtobj.ctrlKey){
+      if (evtobj.keyCode == 80 && evtobj.ctrlKey) {
       	document.getElementById('TheDialogBox').style.display = (dialogBoxVisible ) ?  'none' : '';
       	dialogBoxVisible = !dialogBoxVisible;
       }
-      //Escape key
-      if(evtobj.keyCode == 27 && dialogBoxVisible){
-      	closingBtnCollector(); dialogBoxVisible = !dialogBoxVisible;
+      if(dialogBoxVisible && evtobj.keyCode == 16) {
+      	if(inputfieldShiftFocusing == false) {
+      		input.focus();
+      		input.select();
+      	} else {
+
+      		input.blur();
+      	}
+      	inputfieldShiftFocusing = !inputfieldShiftFocusing;
+
       }
+      //Escape key
+      if(evtobj.keyCode == 27 && dialogBoxVisible) {
+      	closingBtnCollector();
+      }
+      if(fortyEightPlusTen.includes(evtobj.keyCode) && dialogBoxVisible && btnaboxElements) {
+      	btnaboxElements[((evtobj.keyCode-48) == 0 ? 9 : (evtobj.keyCode-49))].click();
+      } 
 
 }		
 
 document.onkeydown = KeyPress;
 console.log('check');
-
-// console.log('done');
-// });

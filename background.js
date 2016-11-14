@@ -5,3 +5,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	// alert("This is the background talking : "+msg.msg);
     sendResponse({backgroundMsg: "this is background msg"});
 });
+chrome.browserAction.onClicked.addListener(function (tab) {
+	// for the current tab, inject the "inject.js" file & execute it
+	chrome.tabs.executeScript(tab.ib, {
+		file: 'awesomplete.min.js'
+	});
+});
