@@ -100,7 +100,6 @@ function closingBtnCollector() {
 }
 var dialogBoxVisible = false;
 var inputfieldShiftFocusing = false;
-var zeroToNine = []
 var btnaboxElements = document.getElementById('ButtonCollection');
 var fortyEightPlusTen = []
 

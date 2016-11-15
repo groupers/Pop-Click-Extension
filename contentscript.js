@@ -100,7 +100,7 @@ console.log(str.length+"length");
 if(str.length >= 2) {
 	for (i=0; i< str.length; i++) {
 		// console.log(str[i].href);
-		if(/javascript(\(.*\)|:).*/.test(str[i].href)) {
+		if(/javascript(\(.*\)|:)|.*\/\#$/.test(str[i].href)) {
 			// console.log(str[i].href);
 			str.remove(i);
 			i--;
@@ -128,16 +128,21 @@ for (i=0; i< str.length; i++) {
 }
 
 //Hashmap text:href
+
 var listofnameElements = ""
+var mapOfElements = new Map();
 for (i = 0; i < 250 && i < document.getElementsByTagName('a').length; i++){
-listofnameElements += document.getElementsByTagName('a')[i].text.trim()+" ,";
+var currentAnchor = document.getElementsByTagName('a')[i];
+listofnameElements += currentAnchor.text.trim()+" ,";
+mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
+
 }
-listofnameElements += "element";
 // If no text nor title find end half of the url :
 // /something/ or /something
 // #something
 
-//Remove elements with href starting with javascript
+//Reorder elements so that they can fit
+//Remove elements with href starting with javascript (y)
 
 //When dialogOpen and shift key pressed, click action on inputfield
 
@@ -147,31 +152,55 @@ listofnameElements += "element";
 // Backend processing on python
 // When multiple text or href seem to have similar substrings remove uncommons
 // If url contains mean URI followed by /# Remove from list :=> Put it in the list of unwanted
-var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst data-list="'+listofnameElements+'" autocomplete="on" />';
+var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst data-list="'+listofnameElements+'" />';
 
 console.log(str);
 
 var div = document.createElement("div"); 
 document.body.appendChild(div); 
 div.id = "TheDialogBox"
-div.innerHTML = e(d,e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
+div.innerHTML = e(d, e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
 div.innerHTML += e(d, string, "default", "ButtonCollection", "btncollector");
 div.innerHTML += e(d,inputfield,"DialogBoxFoot","dialogBoxFoot");
 div.style.position = "float";
 div.style.left = "50px";
 div.style.display = "none";
 
+var dialogBoxVisible = false;
 // Observer for when the div element has it's class attribute altered
-var observer = new MutationObserver(function(mutations) {
+var observerDisplay = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
-        // Was it the style attribute that changed? (Maybe a classname or other attribute change could do this too? You might want to remove the attribute condition) Is display set to 'none'?
         if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' && mutation.attributeName === 'style') {
-            console.log('display attribute changed to not none');
+            dialogBoxVisible = !dialogBoxVisible;
         }
     });
 });
+observerDisplay.observe(div, { attributes: true });
 
-observer.observe(div, { attributes: true });
+//awesomplete > ul > li
+// awesomplete > ul > li:hover
+
+var inputfield = document.getElementById('AwesompleteInputfield')
+// Key press listener on enter key
+addEvent(document, "keypress", function (e) {
+    e = e || window.event;
+    if(e.keyCode == "13"){
+    	var redirectPath = mapOfElements.get(inputfield.value);
+    	if(dialogBoxVisible && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
+    		document.location = redirectPath;
+    	}
+    }
+});
+
+function addEvent(element, event, callback) {
+    if (element.addEventListener) {
+        element.addEventListener(event, callback, false);
+    } else if (element.attachEvent) {
+        element.attachEvent("on" + event, callback);
+    } else {
+        element["on" + event] = callback;
+    }
+}
 
 // Injecting script 
 var s = document.createElement('script');
