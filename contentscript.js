@@ -52,6 +52,7 @@ function e(elementShort, text, href, ID, classname, order) {
 		  }
 		  if (order) {
 		  	text +="<span> ["+order%10+"]</span>";
+		  	ID = "DialogBoxAnchor"+order%10;
 		  }
 		  returnvalue = (ID === "")? '<a href="' + href +'">' + text + "</a>" : '<a id="' + ID + '" href="' + href +'">' + text + '</a>'
 		  break;
@@ -131,7 +132,7 @@ for (i=0; i< str.length; i++) {
 
 var listofnameElements = ""
 var mapOfElements = new Map();
-for (i = 0; i < 250 && i < document.getElementsByTagName('a').length; i++){
+for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++){
 var currentAnchor = document.getElementsByTagName('a')[i];
 listofnameElements += currentAnchor.text.trim()+" ,";
 mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
@@ -177,8 +178,9 @@ var observerDisplay = new MutationObserver(function(mutations) {
 });
 observerDisplay.observe(div, { attributes: true });
 
-//awesomplete > ul > li
-// awesomplete > ul > li:hover
+
+//Add algorithm method to select the element with the most caracters :
+//Order of the words, order of the letters, words in common, letters in common.
 
 var inputfield = document.getElementById('AwesompleteInputfield')
 // Key press listener on enter key
@@ -209,5 +211,6 @@ s.onload = function() {
     this.remove();
 };
 
+// Add event listener for whatever click on anchor element send to  backend process
 (document.head || document.documentElement).appendChild(s);
 // //asynchronously load jQuery

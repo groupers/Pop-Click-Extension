@@ -1,25 +1,6 @@
 
 /** Injected script **/
 
-// function jQuery(func) {
-//     if (func) drh_callbacks.push(func);
-//     return {ready: function(func) { drh_callbacks.push(func); }};
-// };
-// var $ = jQuery, drh_callbacks = [];
-
-// //asynchronously load jQuery
-// setTimeout(function() {
-//     var scr = document.createElement('script');
-//     scr.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js';
-//     document.head.appendChild(scr);
-//     scr.onload = function() {
-//         $.each(drh_callbacks, function(i, func) { $(func); });
-//     };
-// }, 2000);
-
-// jQuery(document).ready(function() {
-//});
-
 //=> Good idea to prompt only the parts that it doesn't share in common and propose as such in terms of formating.
 function getAllElementsWithAttribute(attribute) {
   var matchingElements = [];
@@ -35,6 +16,61 @@ function getAllElementsWithAttribute(attribute) {
   return matchingElements;
 }
 
+//Acts as a CSS selector
+/** Allows use to uniquely identify an HTML element **/
+function getPath(element) {
+  var path, node = element;
+  while(node){
+    var name = node.localName;
+    if (!name) break;
+    name = name.toLowerCase();
+    if (inParentSameNodeName(node) > 1) {
+    	name += ':eq(' + (indexInParent(node))  + ')';
+    }
+    path = name + (path ? '>' + path : '');
+    node = node.parentNode;
+  }
+  return path;
+}
+// Gets the index of the element among others who have the same nodeName
+function indexInParent(node) {
+  var children = node.parentNode.childNodes;
+  var num = 0;
+  for (var i=0; i<children.length; i++) {
+    if (children[i]==node) return num;
+    if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
+    	num++;
+	}
+  }
+ return -1;
+}
+
+// Get number of elements containing the same nodeName
+function inParentSameNodeName(node) {
+ var children = node.parentNode.childNodes;
+ var num = 0;
+ for (var i=0; i<children.length; i++) {
+   if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
+   	num++;
+   }
+ }
+ return num;	
+}
+
+//EventListener when an element is clicked.
+if (document.addEventListener ){
+    document.addEventListener("click", function(event){
+        var targetElement = event.target || event.srcElement;
+        console.log(getPath(targetElement));
+    });
+} else if (document.attachEvent) {    
+    document.attachEvent("onclick", function(){
+        var targetElement = event.target || event.srcElement;
+        console.log(getPath(targetElement));
+    });
+}
+
+// CSS Selector element finder
 function findElementFromPath(path) {
 	if (path > 0) throw 'Requires one element.';
 		var mainIterator = 0; var innerIterator = 0;
@@ -91,13 +127,12 @@ function findElementFromPath(path) {
 		}
 
 var input = document.getElementById('AwesompleteInputfield');
-// new Awesomplete(input, {
-// 	list: ["Ada", "Java", "JavaScript", "Brainfuck", "LOLCODE", "Node.js", "Ruby on Rails"]
-// });
+
 function closingBtnCollector() {
 	document.getElementById('TheDialogBox').style.display = 'none';
 	dialogBoxVisible = !dialogBoxVisible;
 }
+
 var dialogBoxVisible = false;
 var inputfieldShiftFocusing = false;
 var btnaboxElements = document.getElementById('ButtonCollection');
@@ -130,7 +165,7 @@ function KeyPress(e) {
       	closingBtnCollector();
       }
       if(fortyEightPlusTen.includes(evtobj.keyCode) && dialogBoxVisible && btnaboxElements) {
-      	btnaboxElements[((evtobj.keyCode-48) == 0 ? 9 : (evtobj.keyCode-49))].click();
+      	document.getElementById("DialogBoxAnchor"+(evtobj.keyCode-48)).click();
       } 
 
 }		
