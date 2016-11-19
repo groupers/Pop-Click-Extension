@@ -1,5 +1,5 @@
 
-/** Using content script as a front end processing tear **/
+/** Using content script as a front end processing tier **/
 
 //HTML DOM ELEMENT SHORTS
 var p = 0;
@@ -13,12 +13,25 @@ var li = 5;
 //minor 
 var b = -1;
 var i = -2;
-
+ var suggestedElements;
 //Adding extra properties
 var btnabox = 10;
 
-chrome.runtime.sendMessage({msg: "this is a content message"}, function(b) {
-    console.log('This is the content script talking about the call back : ' + b.backgroundMsg);
+//Not necessary
+var array = new Array();
+array[0] = document.location.href;
+var stringifiedArray = JSON.stringify(array);
+var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
+
+//Added call back updating the str
+ chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
+    if(x){
+    	highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
+		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
+		console.log(highest_clicks_text);
+		console.log(highest_clicks_href);
+	}
+	console.log('object just above');
 });
 
 // String processing, so that we can slice and insert an item
@@ -90,7 +103,16 @@ function containsKey(map, key){
 }
 
 var str = [];
-for ( i=0; i< 10 && document.getElementsByTagName('a')[i]; i++ ){
+for (i = 0; i < highest_clicks_text.length; i++){
+var navigation = new Object();
+navigation.text = highest_clicks_text[i];
+navigation.href = highest_clicks_href[i];
+console.log(navigation);
+str.push(navigation);
+}
+console.log(str);
+console.log("above cur str");
+for ( i=0; i< (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++ ){
 	str.push(document.getElementsByTagName('a')[i]);
 }
 str.sort()
@@ -108,10 +130,11 @@ if(str.length >= 2) {
 		}
 	}
 }
-console.log(str.length+"length");
+console.log(str.length + "length");
 var string = "";
 var inListElements = 1;
-for (i=0; i< str.length; i++) {
+
+for (i=0; i < str.length; i++) {
 	var text = "";
 	// if(str[i].text.length == 0 && str[i].title != "") {
 	// 	text = str[i].title;
@@ -122,7 +145,7 @@ for (i=0; i< str.length; i++) {
 	  	// Verifies if the element exists, in case some how in the handling something went wrong.
 	  	//Problem when the anchor tag starts with # for some reason.
 	  	//Example: https://developer.chrome.com/extensions/content_scripts#pi
-		if(currentElement || currentElement != ""){
+		if(currentElement || currentElement != "") {
 			string += currentElement;
 			++inListElements;
 		}
@@ -132,7 +155,7 @@ for (i=0; i< str.length; i++) {
 
 var listofnameElements = ""
 var mapOfElements = new Map();
-for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++){
+for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
 var currentAnchor = document.getElementsByTagName('a')[i];
 listofnameElements += currentAnchor.text.trim()+" ,";
 mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
@@ -153,7 +176,7 @@ mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
 // Backend processing on python
 // When multiple text or href seem to have similar substrings remove uncommons
 // If url contains mean URI followed by /# Remove from list :=> Put it in the list of unwanted
-var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst data-list="'+listofnameElements+'" />';
+var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :" data-list="'+listofnameElements+'" />';
 
 console.log(str);
 
@@ -182,13 +205,17 @@ observerDisplay.observe(div, { attributes: true });
 //Add algorithm method to select the element with the most caracters :
 //Order of the words, order of the letters, words in common, letters in common.
 
-var inputfield = document.getElementById('AwesompleteInputfield')
+var inputfield = document.getElementById('AwesompleteInputfield');
 // Key press listener on enter key
 addEvent(document, "keypress", function (e) {
     e = e || window.event;
     if(e.keyCode == "13"){
+    	console.log('something');
     	var redirectPath = mapOfElements.get(inputfield.value);
-    	if(dialogBoxVisible && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
+    	console.log(redirectPath);
+    	if(window.getComputedStyle(div).getPropertyValue('display') !== 'none' && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
+    		console.log(dialogBoxVisible +"Is this visible");
+    		console.log(inputfield.value.length);
     		document.location = redirectPath;
     	}
     }
@@ -204,6 +231,150 @@ function addEvent(element, event, callback) {
     }
 }
 
+
+//Acts as a CSS selector
+/** Allows use to uniquely identify an HTML element **/
+function getPath(element) {
+  var path, node = element;
+  while(node){
+    var name = node.localName;
+    if (!name) break;
+    name = name.toLowerCase();
+    if (inParentSameNodeName(node) > 1) {
+    	name += ':eq(' + (indexInParent(node))  + ')';
+    }
+    path = name + (path ? '>' + path : '');
+    node = node.parentNode;
+  }
+  return path;
+}
+
+// Gets the index of the element among others who have the same nodeName
+function indexInParent(node) {
+  var children = node.parentNode.childNodes;
+  var num = 0;
+  for (var i=0; i<children.length; i++) {
+    if (children[i]==node) return num;
+    if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
+    	num++;
+	}
+  }
+ return -1;
+}
+
+// Get number of elements containing the same nodeName
+function inParentSameNodeName(node) {
+ var children = node.parentNode.childNodes;
+ var num = 0;
+ for (var i=0; i<children.length; i++) {
+   if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
+   	num++;
+   }
+ }
+ return num;	
+}
+
+
+
+
+// CSS Selector element finder
+function findElementFromPath(path) {
+	if (path > 0) throw 'Requires one element.';
+		var mainIterator = 0; var innerIterator = 0;
+		var arrayOfPath = path.split("\u003e");
+		var currentNodeList = document.getElementsByTagName('html')[0];
+		if (currentNodeList.localName === arrayOfPath[0]) {
+			++mainIterator;
+			while(true) {
+				var oldIterator = mainIterator;
+				if(mainIterator < arrayOfPath.length) {
+					 currentNodeList = currentNodeList.childNodes;
+					  try {
+						var currentSplit = [];
+						var currentSplitCounter = 0;
+						for(var i = 0; i<currentNodeList.length; i++) {
+							try {
+								if(/[a-zA-Z]+(:eq\(\d+\))/.test(arrayOfPath[mainIterator])) {  
+									currentSplit = arrayOfPath[mainIterator].split(/(:eq\(|\))/);
+									currentSplit[2] = parseInt(currentSplit[2]);
+									if (currentNodeList[i]) {
+
+										if(currentSplit[0] === currentNodeList[i].localName.toLowerCase()) {
+
+											if(currentSplitCounter === currentSplit[2]) {
+												currentNodeList = currentNodeList[i];
+												mainIterator++;
+												console.log(currentNodeList);
+												break;
+											}
+											currentSplitCounter++;
+										}
+									}
+								}
+								else if(arrayOfPath[mainIterator] === currentNodeList[i].localName.toLowerCase()) {
+									mainIterator++;
+									currentNodeList = currentNodeList[i];
+								}
+							} catch(err) {
+								console.log('err' + err.message);
+							}
+						}
+					  } catch(err) {
+						console.log('err' + err.message);
+					  }
+					  if (oldIterator == mainIterator) {
+						  break;
+					  }
+					}else{
+						break;
+					}
+				}
+			}
+			return currentNodeList;
+
+		}
+
+function eventFire(el, etype) {
+  if (el.fireEvent) {
+    el.fireEvent('on' + etype);
+  } else {
+    var evObj = document.createEvent('Events');
+    evObj.initEvent(etype, true, false);
+    el.dispatchEvent(evObj);
+  }
+}
+
+//EventListener when an element is clicked.
+if (document.addEventListener ) {
+    document.addEventListener("click", function(event) {
+        var targetElement = event.target || event.srcElement;
+        // console.log(JSON.stringify(instorage));
+        // console.log(targetElement);
+        // console.log(document.getElementById(targetElement.id));
+
+        //Prints the entire arborescence
+        console.log(findElementFromPath(getPath(targetElement)));
+
+	  if( targetElement.nodeName == 'A') {
+	  	var array = new Array();
+	  	array[0] = document.location.href;
+	  	array[1] = targetElement.href;
+	  	array[2] = targetElement.text.trim();
+	  	var stringifiedArray = JSON.stringify(array);
+        chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
+        	if(b && b.backgroundMsg){
+		    	console.log(''+b.backgroundMsg);
+			}
+		    console.log('object just above');
+		});
+	  }
+	});
+} else if (document.attachEvent) {    
+    document.attachEvent("onclick", function() {
+        var targetElement = event.target || event.srcElement;
+        console.log(getPath(event.target));
+    });
+}
 // Injecting script 
 var s = document.createElement('script');
 s.src = chrome.extension.getURL('script.js');
