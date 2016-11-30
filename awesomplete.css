@@ -15,7 +15,7 @@
 
 .awesomplete > input {
     display: block;
-    width: 35em;
+    width: 35em !important;
     height: 2.5em;
     padding: .1em .3em;
     border-radius: .3em;

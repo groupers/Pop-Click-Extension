@@ -23,16 +23,7 @@ array[0] = document.location.href;
 var stringifiedArray = JSON.stringify(array);
 var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
 
-//Added call back updating the str
- chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
-    if(x){
-    	highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
-		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
-		console.log(highest_clicks_text);
-		console.log(highest_clicks_href);
-	}
-	console.log('object just above');
-});
+
 
 // String processing, so that we can slice and insert an item
 String.prototype.splice = function(idx, rem, str) {
@@ -45,6 +36,17 @@ Array.prototype.remove = function(from, to) {
   this.length = from < 0 ? this.length + from : from;
   return this.push.apply(this, rest);
 };
+
+// Array Contains String + Trimming.
+Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i].toString().trim() === obj.toString().trim()) {
+            return true;
+        }
+    }
+    return false;
+}
 
 // Generate DOM element <p>
 function e(elementShort, text, href, ID, classname, order) {
@@ -63,7 +65,7 @@ function e(elementShort, text, href, ID, classname, order) {
 	      if (text.length > 25) {
 		   text = text.substring(0,25)+"..." ;
 		  }
-		  if (order) {
+		  if (order != undefined) {
 		  	text +="<span> ["+order%10+"]</span>";
 		  	ID = "DialogBoxAnchor"+order%10;
 		  }
@@ -101,25 +103,86 @@ function containsKey(map, key){
 	}
 	return false;
 }
+//Added call back updating the str
+var lock = false
+chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
+ 	console.log('message sent');
+	// if(!lock && x != undefined){
+    	highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
+		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
+		console.log(highest_clicks_href);
+		console.log(highest_clicks_text);
+		 var dialogbuttons = document.getElementById("ButtonCollection");
+		  while (dialogbuttons.firstChild) {
+	       dialogbuttons.removeChild(dialogbuttons.firstChild);
+		  }
+		  var randomListOfAnchors = []
+
+		  for (i = 0 ; i < document.getElementsByTagName('a').length; i++){
+		  	if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])){
+
+				randomListOfAnchors.push(i);
+		  	}
+		  }
+		  randomListOfAnchors[randomListOfAnchorsIterator]
+		  var randomListOfAnchorsIterator = 0;
+		  // For performance reasons we should replace the innerHTML by an append.
+		  for (i = 0; i < 10; i++){
+		  	
+		  	if(highest_clicks_text[i] != undefined){
+		    var anchor = e(a, highest_clicks_text[i], highest_clicks_href[i], "", "btnabox", i);
+
+			} else {
+			var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
+			var anchor = e(a, document.getElementsByTagName('a')[currentIndex].text, document.getElementsByTagName('a')[currentIndex].href, "", "btnabox", i);
+			randomListOfAnchorsIterator++;
+			}
+		    dialogbuttons.innerHTML += anchor;
+		  }
+		  // forceRedraw(dialogbuttons);
+
+});
+
+// Could be useful
+function load(target, url) {
+  var r = new XMLHttpRequest();
+  r.open("GET", url, true);
+  r.onreadystatechange = function () {
+    if (r.readyState != 4 || r.status != 200) return;
+    target.innerHTML = r.responseText;
+  };
+  r.send();
+}
+var forceRedraw = function(element){
+
+    if (!element) { return; }
+
+    var n = document.createTextNode(' ');
+    var disp = element.style.display;  // don't worry about previous display style
+
+    element.appendChild(n);
+    element.style.display = 'none';
+
+    setTimeout(function(){
+        element.style.display = disp;
+        n.parentNode.removeChild(n);
+    },20); // you can play with this timeout to make it as short as possible
+}
 
 var str = [];
-for (i = 0; i < highest_clicks_text.length; i++){
-var navigation = new Object();
-navigation.text = highest_clicks_text[i];
-navigation.href = highest_clicks_href[i];
-console.log(navigation);
-str.push(navigation);
-}
-console.log(str);
-console.log("above cur str");
+// for (i = 0; i < highest_clicks_text.length; i++){
+// var navigation = new Object();
+// navigation.text = highest_clicks_text[i];
+// navigation.href = highest_clicks_href[i];
+// // console.log(navigation);
+// str.push(navigation);
+// }
 for ( i=0; i< (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++ ){
 	str.push(document.getElementsByTagName('a')[i]);
 }
-str.sort()
-console.log(str);
+str.sort();
 console.log("\n after");
 var pointer = 1;
-console.log(str.length+"length");
 if(str.length >= 2) {
 	for (i=0; i< str.length; i++) {
 		// console.log(str[i].href);
@@ -179,7 +242,9 @@ mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
 var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :" data-list="'+listofnameElements+'" />';
 
 console.log(str);
-
+var dim_div = document.createElement("div");
+document.body.appendChild(dim_div);
+dim_div.id = "pagecover"
 var div = document.createElement("div"); 
 document.body.appendChild(div); 
 div.id = "TheDialogBox"
@@ -210,16 +275,28 @@ var inputfield = document.getElementById('AwesompleteInputfield');
 addEvent(document, "keypress", function (e) {
     e = e || window.event;
     if(e.keyCode == "13"){
-    	console.log('something');
+    	// console.log('something');
     	var redirectPath = mapOfElements.get(inputfield.value);
-    	console.log(redirectPath);
+    	// console.log(redirectPath);
     	if(window.getComputedStyle(div).getPropertyValue('display') !== 'none' && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
     		console.log(dialogBoxVisible +"Is this visible");
-    		console.log(inputfield.value.length);
+    		// console.log(inputfield.value.length);
+ 	  		var array = new Array();
+	  		array[0] = document.location.href;
+	  		array[1] = redirectPath;
+	  		array[2] = inputfield.value.trim();
+	  		var stringifiedArray = JSON.stringify(array);
+        	chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
+        	if(b && b.backgroundMsg){
+			    	console.log(b.backgroundMsg);
+				}
+			    console.log('Callback object just above');
+			});    		
     		document.location = redirectPath;
     	}
     }
 });
+
 
 function addEvent(element, event, callback) {
     if (element.addEventListener) {
@@ -261,6 +338,7 @@ function indexInParent(node) {
   }
  return -1;
 }
+
 
 // Get number of elements containing the same nodeName
 function inParentSameNodeName(node) {
@@ -305,6 +383,7 @@ function findElementFromPath(path) {
 												currentNodeList = currentNodeList[i];
 												mainIterator++;
 												console.log(currentNodeList);
+												console.log("current node just above");
 												break;
 											}
 											currentSplitCounter++;
@@ -355,7 +434,8 @@ if (document.addEventListener ) {
         //Prints the entire arborescence
         console.log(findElementFromPath(getPath(targetElement)));
 
-	  if( targetElement.nodeName == 'A') {
+      //TODO% Make an else statement if it is a btnabox remove 4 last caracters " [x]"
+	  if( targetElement.nodeName == 'A' && targetElement.className != 'btnabox') {
 	  	var array = new Array();
 	  	array[0] = document.location.href;
 	  	array[1] = targetElement.href;
@@ -363,9 +443,9 @@ if (document.addEventListener ) {
 	  	var stringifiedArray = JSON.stringify(array);
         chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
         	if(b && b.backgroundMsg){
-		    	console.log(''+b.backgroundMsg);
+		    	console.log(b.backgroundMsg);
 			}
-		    console.log('object just above');
+		    console.log('Callback object just above');
 		});
 	  }
 	});

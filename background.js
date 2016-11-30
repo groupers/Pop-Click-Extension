@@ -14,12 +14,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 			page = ''+content[0];
 			var elementhref = ''+content[1];
 			var text = ''+content[2];
+			// var testing_record = PopClick.queryAll("pageselectable", { query: {elementhref: "https://www.facebook.com/"
+			// 	, pagehref: "https://www.facebook.com/#", }})
 		if(page && elementhref && text){
 				var existing_record = PopClick.queryAll("pageselectable", {
 				    query: {elementhref: elementhref, pagehref: page, text: text}
 				});
-				// console.log(existing_record);
-				// console.log(existing_record.length);
+
 				if (typeof existing_record == 'undefined' || existing_record.length == 0){	
 					PopClick.insert("pageselectable",{ pagehref: page,
 				                        elementhref: elementhref,
@@ -49,11 +50,12 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 		var highest_clicks_text = new Array();
 		var highest_clicks_href = new Array();
 		page = ''+content[0]
-		var page_existing_top_ten_elements = PopClick.queryAll("pageselectable", {
-			query: {pagehref: page,
-				sort: [["clicks", "DESC"]]
-			}
+		//Top 10 different
+		var page_existing_top_ten_elements  = PopClick.queryAll("pageselectable", {
+			query: {pagehref: page}, sort: [["ID","DESC"], ["clicks", "DESC"]], distinct: ["elementhref"]
 			});
+		console.log(page_existing_top_ten_elements);
+
 		for(i = 0 ; i < 10 && i < (page_existing_top_ten_elements.length); i++){
 			highest_clicks_text[i] = page_existing_top_ten_elements[i].text;
 			highest_clicks_href[i] = page_existing_top_ten_elements[i].elementhref;
@@ -64,7 +66,6 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 
 		// page_existing_top_ten_elements page_existing_top_ten_elements
 	}
-	// instorage.set(content[1], content[2]);
 });
 //Structure " "
 //Add click to collection of clicks
