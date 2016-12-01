@@ -23,6 +23,13 @@ array[0] = document.location.href;
 var stringifiedArray = JSON.stringify(array);
 var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
 
+chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
+
+  if (msg.action == 'refresh_dialog') {
+
+	generateDialogContent(msg.url);
+  }
+});
 
 
 // String processing, so that we can slice and insert an item
@@ -49,7 +56,8 @@ Array.prototype.contains = function(obj) {
 }
 
 // Generate DOM element <p>
-function e(elementShort, text, href, ID, classname, order) {
+
+function e(elementShort, text, href, ID, classname, order, kind) {
 	var returnvalue = "";
 	text = text.trim();
 	if (text.length == 0 || typeof text === 'undefined') return ;
@@ -57,6 +65,7 @@ function e(elementShort, text, href, ID, classname, order) {
 	if (typeof href === 'undefined') { href = ''; }
 	if (typeof classname === 'undefined') { classname = ''; }
 	if (typeof order === 'undefined') { order = ''; }
+	if (typeof kind === 'undefined') { kind = ''; }
 	switch(elementShort) {
 		case 0:
 	      returnvalue = "<p>" + text + "</p>";
@@ -92,6 +101,9 @@ function e(elementShort, text, href, ID, classname, order) {
 	if(classname) {
 		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' class="' + classname + '"');
 	}
+	if(kind) {
+		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' kind="' + kind + '"');
+	}
 	return returnvalue;
 }
 
@@ -104,44 +116,58 @@ function containsKey(map, key){
 	return false;
 }
 //Added call back updating the str
-var lock = false
-chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
- 	console.log('message sent');
-	// if(!lock && x != undefined){
-    	highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
-		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
-		console.log(highest_clicks_href);
-		console.log(highest_clicks_text);
-		 var dialogbuttons = document.getElementById("ButtonCollection");
-		  while (dialogbuttons.firstChild) {
-	       dialogbuttons.removeChild(dialogbuttons.firstChild);
-		  }
-		  var randomListOfAnchors = []
 
-		  for (i = 0 ; i < document.getElementsByTagName('a').length; i++){
-		  	if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])){
+generateDialogContent();
+function generateDialogContent(url) {
+	if (typeof url === 'undefined') { 
+		url = ''; 
+	} else {
+		var array = new Array();
+		array[0] = url;
+		stringifiedArray = JSON.stringify(array);
+	}
+	chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
+	 	console.log('message sent');
+	    	highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
+			highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
+			console.log(highest_clicks_href);
+			console.log(highest_clicks_text);
+			 var dialogbuttons = document.getElementById("ButtonCollection");
+			  while (dialogbuttons.firstChild) {
+		       dialogbuttons.removeChild(dialogbuttons.firstChild);
+			  }
+			  var randomListOfAnchors = []
 
-				randomListOfAnchors.push(i);
-		  	}
-		  }
-		  randomListOfAnchors[randomListOfAnchorsIterator]
-		  var randomListOfAnchorsIterator = 0;
-		  // For performance reasons we should replace the innerHTML by an append.
-		  for (i = 0; i < 10; i++){
-		  	
-		  	if(highest_clicks_text[i] != undefined){
-		    var anchor = e(a, highest_clicks_text[i], highest_clicks_href[i], "", "btnabox", i);
+			  for (i = 0 ; i < document.getElementsByTagName('a').length; i++){
+			  	if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])){
 
-			} else {
-			var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
-			var anchor = e(a, document.getElementsByTagName('a')[currentIndex].text, document.getElementsByTagName('a')[currentIndex].href, "", "btnabox", i);
-			randomListOfAnchorsIterator++;
-			}
-		    dialogbuttons.innerHTML += anchor;
-		  }
-		  // forceRedraw(dialogbuttons);
+					randomListOfAnchors.push(i);
+			  	}
+			  }
+			  randomListOfAnchors[randomListOfAnchorsIterator]
+			  var randomListOfAnchorsIterator = 0;
+			  // For performance reasons we should replace the innerHTML by an append.
+			  for (i = 0; i < 10; i++){
+			  	
+			  	if(highest_clicks_text[i] != undefined){
+			    var anchor = e(a, highest_clicks_text[i], highest_clicks_href[i], "", "btnabox", i, "pers");
 
-});
+				} else {
+				var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
+				var anchor = e(a, document.getElementsByTagName('a')[currentIndex].text, document.getElementsByTagName('a')[currentIndex].href, "", "btnabox", i);
+				randomListOfAnchorsIterator++;
+				}
+			    dialogbuttons.innerHTML += anchor;
+			  }
+			for(i = 0 ; i < document.getElementsByClassName('btnabox').length; i++){
+				var currentElement =document.getElementsByClassName('btnabox')[i];
+				if( currentElement.getAttribute('kind') === 'pers'){
+					currentElement.style.backgroundColor = "rgb(76, 175, 80)";
+				}
+			}		  
+			  // forceRedraw(dialogbuttons);
+	});
+}
 
 // Could be useful
 function load(target, url) {
@@ -169,14 +195,8 @@ var forceRedraw = function(element){
     },20); // you can play with this timeout to make it as short as possible
 }
 
+/** If sending a message to the localstorage server failed **/
 var str = [];
-// for (i = 0; i < highest_clicks_text.length; i++){
-// var navigation = new Object();
-// navigation.text = highest_clicks_text[i];
-// navigation.href = highest_clicks_href[i];
-// // console.log(navigation);
-// str.push(navigation);
-// }
 for ( i=0; i< (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++ ){
 	str.push(document.getElementsByTagName('a')[i]);
 }
@@ -199,11 +219,11 @@ var inListElements = 1;
 
 for (i=0; i < str.length; i++) {
 	var text = "";
-	// if(str[i].text.length == 0 && str[i].title != "") {
-	// 	text = str[i].title;
-	// }else {
+	if(str[i].text.length == 0 && str[i].title != "") {
+		text = str[i].title;
+	}else {
 		text = str[i].text;
-	// }
+	}
 	  	var currentElement = e(a, text, str[i].href, "", "btnabox", inListElements);
 	  	// Verifies if the element exists, in case some how in the handling something went wrong.
 	  	//Problem when the anchor tag starts with # for some reason.

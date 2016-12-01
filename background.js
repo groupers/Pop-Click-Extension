@@ -6,7 +6,16 @@ if( PopClick.isNew() ) {
 	PopClick.createTable("pageselectable", ["pagehref", "elementhref", "text", "selector", "clicks"]);
 	PopClick.commit();
 }
-// PopClick.queryAll("pageselectable", {query: page })
+
+
+var myURL = "about:blank"; // A default url just in case below code doesn't work
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdated should fire when the selected tab is changed or a link is clicked 
+    chrome.tabs.getSelected(null, function(tab) {
+        myURL = tab.url;
+        chrome.tabs.sendMessage(tabId, {action: "refresh_dialog", url: myURL}, function(response) {});
+    });
+});
+
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	var content, page;
 	if (msg && msg.sendingevent) {
@@ -52,7 +61,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 		page = ''+content[0]
 		//Top 10 different
 		var page_existing_top_ten_elements  = PopClick.queryAll("pageselectable", {
-			query: {pagehref: page}, sort: [["ID","DESC"], ["clicks", "DESC"]], distinct: ["elementhref"]
+			query: {pagehref: page}, sort: [["ID","DESC"], ["clicks", "DESC"]], distinct: ["elementhref","text"]
 			});
 		console.log(page_existing_top_ten_elements);
 
