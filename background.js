@@ -23,6 +23,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 			page = ''+content[0];
 			var elementhref = ''+content[1];
 			var text = ''+content[2];
+			var selector = ''+content[3];
 			// var testing_record = PopClick.queryAll("pageselectable", { query: {elementhref: "https://www.facebook.com/"
 			// 	, pagehref: "https://www.facebook.com/#", }})
 		if(page && elementhref && text){
@@ -34,14 +35,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 					PopClick.insert("pageselectable",{ pagehref: page,
 				                        elementhref: elementhref,
 				                        text: text,
-				                        selector: "blob",
+				                        selector: selector,
 				                        clicks: 1});
 				}
 				else {
 					var current_clicks = existing_record[0].clicks ;
 					PopClick.update("pageselectable",{   pagehref: page,
 				                        elementhref: elementhref,
-				                        text: text},function(row) {
+				                        text: text, selector: selector},function(row) {
 				     row.clicks = ++current_clicks;
 				    // the update callback function returns to the modified record
 				    return row;

@@ -460,6 +460,8 @@ if (document.addEventListener ) {
 	  	array[0] = document.location.href;
 	  	array[1] = targetElement.href;
 	  	array[2] = targetElement.text.trim();
+	  	array[3] = getPath(targetElement);
+
 	  	var stringifiedArray = JSON.stringify(array);
         chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
         	if(b && b.backgroundMsg){
