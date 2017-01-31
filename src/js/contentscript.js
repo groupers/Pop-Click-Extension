@@ -495,7 +495,7 @@ if (document.addEventListener ) {
 /* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
 // Injecting script 
 var s = document.createElement('script');
-s.src = chrome.extension.getURL('script.js');
+s.src = chrome.extension.getURL('src/js/script.js');
 s.onload = function() {
     this.remove();
 };

@@ -16,7 +16,7 @@ function getAllElementsWithAttribute(attribute) {
   return matchingElements;
 }
 
-
+/** Closes the Dialog **/
 function closingBtnCollector() {
 	document.getElementById('TheDialogBox').style.display = 'none';
 	dialogBoxVisible = !dialogBoxVisible;
@@ -31,6 +31,7 @@ if (btnaboxElements) {
 	fortyEightPlusTen = Array.apply(null, {length: btnaboxElements.length+1}).map(Number.call, function(x) { return x + 48; });
 }
 
+/**  Monitores Keyboard import for Dialog Open/Close State **/
 var doubleShift = false;
 function KeyPress(e) {
 	var input = document.getElementById('AwesompleteInputfield');
