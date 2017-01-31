@@ -13,7 +13,7 @@ var li = 5;
 //minor 
 var b = -1;
 var i = -2;
- var suggestedElements;
+var suggestedElements;
 //Adding extra properties
 var btnabox = 10;
 
@@ -31,7 +31,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   }
 });
 
-
+/**  %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% **/
 // String processing, so that we can slice and insert an item
 String.prototype.splice = function(idx, rem, str) {
     return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
@@ -55,6 +55,16 @@ Array.prototype.contains = function(obj) {
     return false;
 }
 
+function containsKey(map, key){
+	for (var prop in map) {
+	     if(prop === key){
+	     	return true;
+	     }
+	}
+	return false;
+}
+
+/** &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& **/
 // Generate DOM element <p>
 
 function e(elementShort, text, href, ID, classname, order, kind) {
@@ -107,14 +117,6 @@ function e(elementShort, text, href, ID, classname, order, kind) {
 	return returnvalue;
 }
 
-function containsKey(map, key){
-	for (var prop in map) {
-	     if(prop === key){
-	     	return true;
-	     }
-	}
-	return false;
-}
 //Added call back updating the str
 
 generateDialogContent();
@@ -169,7 +171,7 @@ function generateDialogContent(url) {
 	});
 }
 
-// Could be useful
+// Could be useful -- to check if a website is available //
 function load(target, url) {
   var r = new XMLHttpRequest();
   r.open("GET", url, true);
@@ -194,7 +196,7 @@ var forceRedraw = function(element){
         n.parentNode.removeChild(n);
     },20); // you can play with this timeout to make it as short as possible
 }
-
+/** Second mesure **/
 /** If sending a message to the localstorage server failed **/
 var str = [];
 for ( i=0; i< (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++ ){
@@ -234,13 +236,12 @@ for (i=0; i < str.length; i++) {
 		}
 }
 
-//Hashmap text:href
-
 var listofnameElements = ""
 var mapOfElements = new Map();
 for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
 var currentAnchor = document.getElementsByTagName('a')[i];
 listofnameElements += currentAnchor.text.trim()+" ,";
+//Hashmap text:href
 mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
 
 }
@@ -253,7 +254,13 @@ mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
 
 //When dialogOpen and shift key pressed, click action on inputfield
 
-//Make a color for a different category of elements for the backgrounds
+//Make a color for a different category of elements for the backgrounds ()
+
+//Record also the Dialog buttons when clicked meaning they have to be stored in array/Hashmap
+
+//Record what has been clicked but also analyse the elements parent structure.
+
+
 
 
 // Backend processing on python
@@ -277,6 +284,7 @@ div.style.display = "none";
 
 var dialogBoxVisible = false;
 // Observer for when the div element has it's class attribute altered
+/** Observing the visibility of the dialog box **/
 var observerDisplay = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' && mutation.attributeName === 'style') {
@@ -287,48 +295,7 @@ var observerDisplay = new MutationObserver(function(mutations) {
 observerDisplay.observe(div, { attributes: true });
 
 
-//Add algorithm method to select the element with the most caracters :
-//Order of the words, order of the letters, words in common, letters in common.
-
-var inputfield = document.getElementById('AwesompleteInputfield');
-// Key press listener on enter key
-addEvent(document, "keypress", function (e) {
-    e = e || window.event;
-    if(e.keyCode == "13"){
-    	// console.log('something');
-    	var redirectPath = mapOfElements.get(inputfield.value);
-    	// console.log(redirectPath);
-    	if(window.getComputedStyle(div).getPropertyValue('display') !== 'none' && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
-    		console.log(dialogBoxVisible +"Is this visible");
-    		// console.log(inputfield.value.length);
- 	  		var array = new Array();
-	  		array[0] = document.location.href;
-	  		array[1] = redirectPath;
-	  		array[2] = inputfield.value.trim();
-	  		var stringifiedArray = JSON.stringify(array);
-        	chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
-        	if(b && b.backgroundMsg){
-			    	console.log(b.backgroundMsg);
-				}
-			    console.log('Callback object just above');
-			});    		
-    		document.location = redirectPath;
-    	}
-    }
-});
-
-
-function addEvent(element, event, callback) {
-    if (element.addEventListener) {
-        element.addEventListener(event, callback, false);
-    } else if (element.attachEvent) {
-        element.attachEvent("on" + event, callback);
-    } else {
-        element["on" + event] = callback;
-    }
-}
-
-
+/* ------------ ------------------ ------------------ ------------------ ------------------ */
 //Acts as a CSS selector
 /** Allows use to uniquely identify an HTML element **/
 function getPath(element) {
@@ -428,11 +395,53 @@ function findElementFromPath(path) {
 						break;
 					}
 				}
-			}
+			}			
 			return currentNodeList;
 
 		}
+/* ------------ ------------------ ------------------ ------------------ ------------------------------------ */
 
+/* ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ */
+//Add algorithm method to select the element with the most caracters :
+//Order of the words, order of the letters, words in common, letters in common.
+
+var inputfield = document.getElementById('AwesompleteInputfield');
+// Key press listener on enter key
+addEvent(document, "keypress", function (e) {
+    e = e || window.event;
+    if(e.keyCode == "13"){
+    	// console.log('something');
+    	var redirectPath = mapOfElements.get(inputfield.value);
+    	// console.log(redirectPath);
+    	if(window.getComputedStyle(div).getPropertyValue('display') !== 'none' && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
+    		console.log(dialogBoxVisible +"Is this visible");
+    		// console.log(inputfield.value.length);
+ 	  		var array = new Array();
+	  		array[0] = document.location.href;
+	  		array[1] = redirectPath;
+	  		array[2] = inputfield.value.trim();
+	  		var stringifiedArray = JSON.stringify(array);
+        	chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
+        	if(b && b.backgroundMsg){
+			    	console.log(b.backgroundMsg);
+				}
+			    console.log('Callback object just above');
+			});    		
+    		document.location = redirectPath;
+    	}
+    }
+});
+
+
+function addEvent(element, event, callback) {
+    if (element.addEventListener) {
+        element.addEventListener(event, callback, false);
+    } else if (element.attachEvent) {
+        element.attachEvent("on" + event, callback);
+    } else {
+        element["on" + event] = callback;
+    }
+}
 function eventFire(el, etype) {
   if (el.fireEvent) {
     el.fireEvent('on' + etype);
@@ -451,9 +460,14 @@ if (document.addEventListener ) {
         // console.log(targetElement);
         // console.log(document.getElementById(targetElement.id));
 
+        console.log('-------    --------');
+        //Not supported
+        // console.log(getEventListeners(targetElement));
+        console.log('-------    --------');
         //Prints the entire arborescence
         console.log(findElementFromPath(getPath(targetElement)));
-
+        // console.log(findElementFromPath(getPath(targetElement).innerHTML.replace(/<[^>]*>/g, "")));
+       console.log(getPath(targetElement));
       //TODO% Make an else statement if it is a btnabox remove 4 last caracters " [x]"
 	  if( targetElement.nodeName == 'A' && targetElement.className != 'btnabox') {
 	  	var array = new Array();
@@ -474,9 +488,11 @@ if (document.addEventListener ) {
 } else if (document.attachEvent) {    
     document.attachEvent("onclick", function() {
         var targetElement = event.target || event.srcElement;
-        console.log(getPath(event.target));
     });
 }
+/* ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ */
+
+/* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
 // Injecting script 
 var s = document.createElement('script');
 s.src = chrome.extension.getURL('script.js');

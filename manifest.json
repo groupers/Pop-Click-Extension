@@ -3,16 +3,46 @@
   "version": "1.0",
   "manifest_version": 2,
   "content_scripts": [{
-      "matches": ["https://*/*","file://*","http://*/*"],
-      "js": ["js/localstoragedb.js","contentscript.js","awesomplete.min.js"],
-      "css" : ["injectedstylesheet.css","awesomplete.css"]
-  }],"browser_action": {
+
+      "matches": [
+        "https://*/*",
+        "file://*",
+        "http://*/*"
+      ],
+      "js": [
+        "src/js/localstoragedb.js",
+        "src/js/getters.js",
+        "src/js/contentscript.js",
+        "src/js/awesomplete.min.js"
+      ],
+      "css" : [
+        "injectedstylesheet.css",
+        "awesomplete.css"
+      ]
+
+  }],
+  "browser_action": {
+
     "default_popup": "popup.html"
-  },"web_accessible_resources": ["popup.html","awesomplete.css","awesomplete.min.js"],
-   "background": {
-     "scripts": ["js/localstoragedb.js","background.js"]
+
   },
-  "permissions": ["storage","unlimitedStorage","tabs","activeTab"],
+  "web_accessible_resources": [
+    "popup.html",
+    "awesomplete.css",
+    "src/js/awesomplete.min.js"
+  ],
+   "background": {
+     "scripts": [
+      "src/js/localstoragedb.js"
+      ,"src/js/background.js"
+    ]
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "activeTab"
+  ],
   "content_security_policy": "script-src 'self' https://*.googleapis.com/*; object-src 'self'",
   "web_accessible_resources": ["script.js"]
 }
