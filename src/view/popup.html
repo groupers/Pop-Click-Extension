@@ -56,35 +56,59 @@
 		position:relative;
 		top:1px;
 	}
-body {
-	border:solid;
-	border-length:6px;
-	border-color:rgb(30, 136, 226);
-}
+	body {
+		border:solid;
+		border-length:6px;
+		border-color:rgb(30, 136, 226);
+	}
 </style>
 <body>
-<link rel="stylesheet" type="text/css" href="../css/materialize.min.css"> 
-<script src="../js/materialize.min.js"></script>
-<script src="../js/popup.js"></script>
+	<script src="../js/jquery-3.1.1.min.js" type="text/javascript"></script>
+	<link rel="stylesheet" type="text/css" href="../css/materialize.min.css"> 
+	<script src="../js/materialize.min.js"></script>
+	<script src="../js/popup.js"></script>
 	<div id="title">
 		<center style="margin-top:10px">
 			<h2 style="color:rgb(30, 136, 226)">PopClick</h2>
 		</center>
 	</div>
-	<div id="middle">
-		<b><h6>Before you get to enjoy the popclick experience we have to get you all set up.</h6></b>
-	</div>
-	<div id="bottom">
-		<b><h6><i>You agree on the terms and conditions reflecting your use of this software as described in the following&nbsp;</i><a href="contract.com">contract</a> :</h6>
-			<form action="">
-			  <div class="row">
-			  <div class="col s3 offset-s4"> 
-				<input class="" type="checkbox" name="yes" id="yes" /><label for="yes">Yes</label>
+	<form id="initialForm">
+		<div id="middle">		
+			<b><h6>Before you get to enjoy the popclick experience we have to get you all set up.</h6></b>
+			<div class="row">
+				<div class="input-field offset-s2 col s4">
+					<input placeholder="*Write here*" id="in_age" type="text" class="validate">
+					<label for="in_age">Age</label>
 				</div>
+				<div class="col s4">
+					<p class="range-field">
+						<input type="range" id="ran_age" min="4" max="120" />
+					</p>
 				</div>
-			</form></b>
-			<a href="#" class="myButton">></a>
+			</div>
+			<div class="row">
+				<div class="input-field offset-s2 col s8">
+					<select>
+						<option value="1">Female</option>
+						<option value="2">Male</option>
+						<option value="3">Other</option>
+						<option value="4">Irrevelant</option>
+					</select>
+					<label>Gender</label>
+				</div>
+			</div>
 		</div>
-	</body>
+		<div id="bottom">
+			<b><h6><i>You agree on the terms and conditions reflecting your use of this software as described in the following&nbsp;</i><a href="contract.com">contract</a> :</h6>
+				<div class="row">
+					<div class="col s3 offset-s4"> 
+						<input class="" type="checkbox" name="yes" id="yes" /><label id="signing" value="0" for="yes">Yes</label>
+					</div>
+				</div>
+			</b>
+			<button id="submitInitial" type="submit" class="myButton">></button>
+		</div>
+	</form>
+</body>
 
-	</html>
+</html>
