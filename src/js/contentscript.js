@@ -140,9 +140,8 @@ function generateDialogContent(url) {
 		}
 		var randomListOfAnchors = []
 
-		for (i = 0 ; i < document.getElementsByTagName('a').length; i++){
-			if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])){
-
+		for (i = 0 ; i < document.getElementsByTagName('a').length; i++) {
+			if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])) {
 				randomListOfAnchors.push(i);
 			}
 		}
@@ -151,7 +150,7 @@ function generateDialogContent(url) {
 			  // For performance reasons we should replace the innerHTML by an append.
 			  for (i = 0; i < 10; i++){
 			  	
-			  	if(highest_clicks_text[i] != undefined){
+			  	if(highest_clicks_text[i] != undefined) {
 			  		var anchor = e(a, highest_clicks_text[i], highest_clicks_href[i], "", "btnabox", i, "pers");
 
 			  	} else {
@@ -161,13 +160,12 @@ function generateDialogContent(url) {
 			  	}
 			  	dialogbuttons.innerHTML += anchor;
 			  }
-			  for(i = 0 ; i < document.getElementsByClassName('btnabox').length; i++){
+			  for(i = 0 ; i < document.getElementsByClassName('btnabox').length; i++) {
 			  	var currentElement =document.getElementsByClassName('btnabox')[i];
-			  	if( currentElement.getAttribute('kind') === 'pers'){
+			  	if(currentElement.getAttribute('kind') === 'pers') {
 			  		currentElement.style.backgroundColor = "rgb(76, 175, 80)";
 			  	}
 			  }		  
-			  // forceRedraw(dialogbuttons);
 			});
 }
 
@@ -181,7 +179,7 @@ function load(target, url) {
 	};
 	r.send();
 }
-var forceRedraw = function(element){
+var forceRedraw = function(element) {
 
 	if (!element) { return; }
 
@@ -191,7 +189,7 @@ var forceRedraw = function(element){
     element.appendChild(n);
     element.style.display = 'none';
 
-    setTimeout(function(){
+    setTimeout(function() {
     	element.style.display = disp;
     	n.parentNode.removeChild(n);
     },20); // you can play with this timeout to make it as short as possible
@@ -199,14 +197,14 @@ var forceRedraw = function(element){
 /** Second mesure **/
 /** If sending a message to the localstorage server failed **/
 var str = [];
-for ( i=0; i< (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++ ){
+for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++) {
 	str.push(document.getElementsByTagName('a')[i]);
 }
 str.sort();
 console.log("\n after");
 var pointer = 1;
 if(str.length >= 2) {
-	for (i=0; i< str.length; i++) {
+	for (i=0; i < str.length; i++) {
 		if(/javascript(\(.*\)|:)|.*\/\#$/.test(str[i].href)) {
 			str.remove(i);
 			i--;
@@ -239,10 +237,8 @@ for (i=0; i < str.length; i++) {
 	  for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
 	  	var currentAnchor = document.getElementsByTagName('a')[i];
 	  	listofnameElements += currentAnchor.text.trim()+" ,";
-//Hashmap text:href
-mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
-
-}
+	  	mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
+	  }
 // If no text nor title find end half of the url :
 // /something/ or /something
 // #something
@@ -292,18 +288,17 @@ var observerDisplay = new MutationObserver(function(mutations) {
 });
 observerDisplay.observe(div, { attributes: true });
 
-
 /* ------------ ------------------ ------------------ ------------------ ------------------ */
 //Acts as a CSS selector
 /** Allows use to uniquely identify an HTML element **/
 function getPath(element) {
 	var path, node = element;
-	while(node){
+	while(node) {
 		var name = node.localName;
 		if (!name) break;
 		name = name.toLowerCase();
 		if (inParentSameNodeName(node) > 1) {
-			name += ':eq(' + (indexInParent(node))  + ')';
+			name += ':eq(' + (indexInParent(node)) + ')';
 		}
 		path = name + (path ? '>' + path : '');
 		node = node.parentNode;
@@ -324,7 +319,6 @@ function indexInParent(node) {
 	return -1;
 }
 
-
 // Get number of elements containing the same nodeName
 function inParentSameNodeName(node) {
 	var children = node.parentNode.childNodes;
@@ -336,9 +330,6 @@ function inParentSameNodeName(node) {
 	}
 	return num;	
 }
-
-
-
 
 // CSS Selector element finder
 function findElementFromPath(path) {
@@ -389,7 +380,7 @@ function findElementFromPath(path) {
 				if (oldIterator == mainIterator) {
 					break;
 				}
-			}else{
+			} else {
 				break;
 			}
 		}
@@ -398,98 +389,6 @@ function findElementFromPath(path) {
 
 }
 /* ------------ ------------------ ------------------ ------------------ ------------------------------------ */
-
-/* ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ */
-//Add algorithm method to select the element with the most caracters :
-//Order of the words, order of the letters, words in common, letters in common.
-
-var inputfield = document.getElementById('AwesompleteInputfield');
-// Key press listener on enter key
-addEvent(document, "keypress", function (e) {
-	e = e || window.event;
-	if(e.keyCode == "13"){
-		var redirectPath = mapOfElements.get(inputfield.value);
-		if(window.getComputedStyle(div).getPropertyValue('display') !== 'none' && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
-			console.log(dialogBoxVisible +"Is this visible");
-			var array = new Array();
-			array[0] = document.location.href;
-			array[1] = redirectPath;
-			array[2] = inputfield.value.trim();
-			var stringifiedArray = JSON.stringify(array);
-			chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
-				if(b && b.backgroundMsg){
-					console.log(b.backgroundMsg);
-				}
-				console.log('Callback object just above');
-			});    		
-			document.location = redirectPath;
-		}
-	}
-});
-
-
-function addEvent(element, event, callback) {
-	if (element.addEventListener) {
-		element.addEventListener(event, callback, false);
-	} else if (element.attachEvent) {
-		element.attachEvent("on" + event, callback);
-	} else {
-		element["on" + event] = callback;
-	}
-}
-function eventFire(el, etype) {
-	if (el.fireEvent) {
-		el.fireEvent('on' + etype);
-	} else {
-		var evObj = document.createEvent('Events');
-		evObj.initEvent(etype, true, false);
-		el.dispatchEvent(evObj);
-	}
-}
-
-//EventListener when an element is clicked.
-if (document.addEventListener) {
-	document.addEventListener("click", function(event) {
-		var targetElement = event.target || event.srcElement;
-		var parentElementA = undefined, currentElement = targetElement;
-		if(targetElement.nodeName != 'A' && targetElement.className != 'btnabox') {
-			for(i = 0; i < 4; i++){
-				if (currentElement.parentElement == undefined){
-					break;
-				} else {
-					currentElement = currentElement.parentElement;
-				}
-				if(currentElement.nodeName == 'A') {
-					parentElementA = currentElement;
-					break;
-				}
-			}
-		}
-		if((targetElement.nodeName == 'A' && targetElement.className != 'btnabox') || parentElementA) {
-			if(parentElementA) {
-				targetElement = parentElementA;
-			}
-			var array = new Array();
-			array[0] = document.location.href;
-			array[1] = targetElement.href;
-			array[2] = targetElement.text.trim();
-			array[3] = getPath(targetElement);
-
-			var stringifiedArray = JSON.stringify(array);
-			chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
-				if(b && b.backgroundMsg){
-					console.log(b.backgroundMsg);
-				}
-				console.log('Callback object just above');
-			});
-		}
-	});
-} else if (document.attachEvent) {    
-	document.attachEvent("onclick", function() {
-		var targetElement = event.target || event.srcElement;
-	});
-}
-/* ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ ++++++++++++ */
 
 /* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
 // Injecting script 

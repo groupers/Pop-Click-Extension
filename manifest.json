@@ -12,6 +12,7 @@
       "js": [
         "src/js/localstoragedb.js",
         "src/js/getters.js",
+        "src/js/listeners.js",
         "src/js/contentscript.js",
         "src/js/awesomplete.min.js"
       ],
@@ -42,7 +43,7 @@
     "storage",
     "unlimitedStorage",
     "tabs",
-    "activeTab"
-  ],
-  "content_security_policy": "script-src 'self' https://*.googleapis.com/*; object-src 'self'"
+    "activeTab",
+    "https://ajax.googleapis.com/"
+  ]
 }
