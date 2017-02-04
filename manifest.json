@@ -28,6 +28,7 @@
 
   },
   "web_accessible_resources": [
+    "src/images/sparkles.gif",
     "src/view/popup.html",
     "src/css/awesomplete.css",
     "src/js/awesomplete.min.js",
