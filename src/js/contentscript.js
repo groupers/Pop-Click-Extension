@@ -132,8 +132,6 @@ function generateDialogContent(url) {
 		console.log('message sent');
 		highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
 		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
-		console.log(highest_clicks_href);
-		console.log(highest_clicks_text);
 		var dialogbuttons = document.getElementById("ButtonCollection");
 		while (dialogbuttons.firstChild) {
 			dialogbuttons.removeChild(dialogbuttons.firstChild);
@@ -260,9 +258,7 @@ for (i=0; i < str.length; i++) {
 // Backend processing on python
 // When multiple text or href seem to have similar substrings remove uncommons
 // If url contains mean URI followed by /# Remove from list :=> Put it in the list of unwanted
-var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :" data-list="'+listofnameElements+'" />';
-
-console.log(str);
+var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :"/>';
 var dim_div = document.createElement("div");
 document.body.appendChild(dim_div);
 dim_div.id = "pagecover"
@@ -275,7 +271,10 @@ div.innerHTML += e(d,inputfield,"DialogBoxFoot","dialogBoxFoot");
 div.style.position = "float";
 div.style.left = "50px";
 div.style.display = "none";
-
+var input = document.getElementById("AwesompleteInputfield");
+new Awesomplete(input, {
+	list: listofnameElements
+});
 var dialogBoxVisible = false;
 // Observer for when the div element has it's class attribute altered
 /** Observing the visibility of the dialog box **/

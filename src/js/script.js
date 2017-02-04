@@ -41,7 +41,7 @@ function KeyPress(e) {
       	dialogBoxVisible = !dialogBoxVisible;
       }
       if(dialogBoxVisible && evtobj.keyCode == 16) {
-      	console.log('test'+ input == document.activeElement);
+      	// console.log('test'+ input == document.activeElement);
       	if(input != document.activeElement) {
       		input.focus();
       		input.select();

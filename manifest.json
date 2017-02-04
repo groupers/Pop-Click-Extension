@@ -10,15 +10,16 @@
         "http://*/*"
       ],
       "js": [
+        "src/js/levenshtein.js",
         "src/js/localstoragedb.js",
         "src/js/getters.js",
         "src/js/listeners.js",
-        "src/js/contentscript.js",
-        "src/js/awesomplete.min.js"
+        "src/js/awesomplete.min.js",
+        "src/js/contentscript.js"
       ],
       "css" : [
-        "src/css/injectedstylesheet.css",
-        "src/css/awesomplete.css"
+        "src/css/awesomplete.css",
+        "src/css/injectedstylesheet.css"
       ]
 
   }],

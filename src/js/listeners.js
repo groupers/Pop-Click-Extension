@@ -1,19 +1,18 @@
 //Add algorithm method to select the element with the most caracters :
 //Order of the words, order of the letters, words in common, letters in common.
-
-var inputfield = document.getElementById('AwesompleteInputfield');
 // Key press listener on enter key
-addEvent(document, "keypress", function (e) {
+addEvent(document, "keypress", function(e) {
 	e = e || window.event;
 	if(e.keyCode == "13") {
+		var inputfield = document.getElementById('AwesompleteInputfield');
 		var redirectPath = mapOfElements.get(inputfield.value);
-		if(window.getComputedStyle(div).getPropertyValue('display') !== 'none' && redirectPath && inputfield.value.length > 0 &&  inputfield == document.activeElement){
-			console.log(dialogBoxVisible +"Is this visible");
+		if(window.getComputedStyle(div).getPropertyValue('display') !== 'none' && redirectPath && inputfield.value && inputfield.value.length > 0 &&  inputfield == document.activeElement) {
 			var array = new Array();
 			array[0] = document.location.href;
 			array[1] = redirectPath;
 			array[2] = inputfield.value.trim();
 			var stringifiedArray = JSON.stringify(array);
+			console.log(stringifiedArray)
 			chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
 				if(b && b.backgroundMsg) {
 					console.log(b.backgroundMsg);

@@ -35,17 +35,20 @@
   text-decoration: none;
 }
 .dialogBoxHead {
+  display: table-row;
   float:right;
   height: 10%;
   width: 100%;
 
 }
 .dialogBoxFoot {
+  display: table-row;
   clear:both;
   height: 30%;
   width: 100%;
 }
 .btncollector {
+  display: table-row;
   font-size: 0;
   letter-spacing: 0;
   word-spacing: 0;
@@ -56,6 +59,8 @@
   text-align: center;
 }
 #TheDialogBox {
+  overflow:auto; 
+  display: table;
   border-style: solid;
   border-width: medium;
   border-color: #1E88E5;
