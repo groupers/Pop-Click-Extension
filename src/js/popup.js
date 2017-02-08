@@ -67,7 +67,6 @@ $(document).ready(function() {
 					element.style.color = 'rgba(0,0,0,0.6)';
 
 				}
-				console.log(chips_count)
 				if(chips_count > 2) {
 					$('#sparkles').show();
 				} else {
@@ -138,32 +137,11 @@ function initialInterests() {
 }
 
 function initialPost() {
-	event.preventDefault();
-	var today = new Date()
-	var dd = today.getDate();
-	var mm = today.getMonth()+1; 
-	var yyyy = today.getFullYear();
-	var HH = today.getHours();
-	var MM = today.getMinutes();
-	if(dd<10) 
-	{
-		dd='0'+dd;
-	} 
-
-	if(mm<10) 
-	{
-		mm='0'+mm;
-	}
-	if(HH<10)
-	{
-		HH='0'+HH;
-	}
-	today = yyyy+'-'+mm+'-'+dd+' '+HH+':'+MM
+	event.preventDefault()
 	var age = document.getElementById('in_age').value
 	var gender = genders[document.getElementById('gender').value-1]
 	var signed = document.getElementById('signing').value
-	console.log(today);
-	postAction(today, age, initialInterests(), gender, signed, initialResponse);
+	postAccountCreation(getLogtime(), age, initialInterests(), gender, signed, initialResponse);
 }
 
 function displayElement(obj) {
@@ -186,7 +164,6 @@ function initialResponse(str){
 }
 
 function logging(tes) {
-	console.log(tes);
 	tes = JSON.parse(tes);
 	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
 		console.log('auth on board')
@@ -195,8 +172,6 @@ function logging(tes) {
 
 function fetchFileContent(URL, cb) {
 	var xhr = new XMLHttpRequest()
-	console.log('sent');
-	console.log('URL'+URL)
 	xhr.ontimeout = function() {
 		console.error('Please contact support.')
 	};
@@ -213,7 +188,7 @@ function fetchFileContent(URL, cb) {
 }
 
 //Remember to toast if form isn't complete
-function postAction(logtime, age, interests, gender, signed, callback){
+function postAccountCreation(logtime, age, interests, gender, signed, callback){
 	var postUrl = 'http://localhost:8000/popclick/api/create/';
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();

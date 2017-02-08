@@ -38,8 +38,9 @@
   ],
    "background": {
      "scripts": [
-      "src/js/3rdparty/localstoragedb.js"
-      ,"src/js/background.js"
+      "src/js/helpers.js",
+      "src/js/3rdparty/localstoragedb.js",
+      "src/js/background.js"
     ]
   },
   "permissions": [

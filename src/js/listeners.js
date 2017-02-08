@@ -43,6 +43,7 @@ function eventFire(el, etype) {
 		el.dispatchEvent(evObj);
 	}
 }
+
 if (document.addEventListener) {
 	document.addEventListener("click", function(event) {
 		var targetElement = event.target || event.srcElement;
@@ -68,6 +69,7 @@ if (document.addEventListener) {
 					targetElement = parentElementA;
 				}
 				array[1] = targetElement.href;
+
 			// Have to add a condition for when there is no title nor text.
 			// Order : 1.Text, 2.title, 3.child alt, 4. URL compare, 5. tag
 			// Give option to modify name
@@ -75,6 +77,9 @@ if (document.addEventListener) {
 			if(targetElement.className != 'btnabox') {
 				array[3] = getPath(targetElement);
 			} else {
+				array[2] = array[2].replace(/\s\[\d*\]$/,"")
+
+				// Get object selector with same page,href
 				array[3] = 'btnabox-element';
 			}
 			var stringifiedArray = JSON.stringify(array);

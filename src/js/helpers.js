@@ -1,3 +1,35 @@
+// Get today's date and time in a properly javascript/python format
+function getObjectFromHref(href){
+	for( i=0; i < document.getElementsByTagName('a').length; i++) {
+		if(href === document.getElementsByTagName('a')[i].href){
+			return document.getElementsByTagName('a')[i];
+		}
+	}
+}
+function getLogtime() {
+	var today = new Date()
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; 
+	var yyyy = today.getFullYear();
+	var HH = today.getHours();
+	var MM = today.getMinutes();
+	if(dd<10) 
+	{
+		dd='0'+dd;
+	} 
+
+	if(mm<10) 
+	{
+		mm='0'+mm;
+	}
+	if(HH<10)
+	{
+		HH='0'+HH;
+	}
+	today = yyyy+'-'+mm+'-'+dd+' '+HH+':'+MM;
+	return today
+}
+
 // String processing, so that we can slice and insert an item
 String.prototype.splice = function(idx, rem, str) {
 	return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));

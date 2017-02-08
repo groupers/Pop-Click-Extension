@@ -1,8 +1,5 @@
 
 /** Using content script as a front end processing tier **/
-
-//HTML DOM ELEMENT SHORTS
-var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5, b = -1, i = -2;
 var suggestedElements;
 //Adding extra properties
 var btnabox = 10;
@@ -21,6 +18,8 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 });
 
+//HTML DOM ELEMENT SHORTS
+var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5;
 // Generate DOM element <p>
 function e(elementShort, text, href, ID, classname, order, kind) {
 	var returnvalue = "";
