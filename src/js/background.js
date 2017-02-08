@@ -1,12 +1,17 @@
 /** Using background to handle background task which do not require to be processed on each page **/ 
 // Initialise. If the database doesn't exist, it is created
 
-var PopClick = new localStorageDB("ClickTable", chrome.storage.local);
-if(PopClick.isNew()) {
-	PopClick.createTable("pageselectable", ["pagehref", "elementhref", "text", "selector", "clicks"]);
-	PopClick.commit();
-}
+var PopClick_profile = new localStorageDB("Profile", chrome.storage.local);
+var PopClick_local_clickables = new localStorageDB("ClickTable", chrome.storage.local);
 
+if(PopClick_profile.isNew()) {
+	PopClick_profile.createTable("profile", ["token", "privatekey","logtime"]);
+	PopClick_profile.commit();
+}
+if(PopClick_local_clickables.isNew()) {
+	PopClick_local_clickables.createTable("pageselectable", ["pagehref", "elementhref", "text", "selector", "clicks"]);
+	PopClick_local_clickables.commit();
+}
 
 var myURL = "about:blank"; // A default url just in case below code doesn't work
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdated should fire when the selected tab is changed or a link is clicked 
@@ -16,6 +21,26 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdate
 	});
 });
 
+/** Handles profile **/
+chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+	if(msg && msg.createprofile) {
+		var profile = new Array(JSON.parse(msg.createprofile));
+			var tok = profile[0][0]
+			console.log(tok)
+			PopClick_profile.insert("profile", {token: ''+tok, privatekey: ''});
+			PopClick_profile.commit();
+	}
+	if(msg && msg.updateprivate) {
+		var priv  = msg.updateprivate
+		console.log(priv)
+		PopClick_profile.update("profile", function(row){ 
+			row.privatekey = priv;
+			console.log(row)
+			return row;
+		});
+		PopClick_profile.commit();
+	}
+});
 /** Handles selectable elements **/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	var content, page;
@@ -27,15 +52,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 		var selector = ''+content[3];
 		console.log('dab')
 		console.log(content)
-			// var testing_record = PopClick.queryAll("pageselectable", { query: {elementhref: "https://www.facebook.com/"
+			// var testing_record = PopClick_local_clickables.queryAll("pageselectable", { query: {elementhref: "https://www.facebook.com/"
 			// 	, pagehref: "https://www.facebook.com/#", }})
 			if(page && elementhref && text) {
-				var existing_record = PopClick.queryAll("pageselectable", {
+				var existing_record = PopClick_local_clickables.queryAll("pageselectable", {
 					query: {elementhref: elementhref, pagehref: page, text: text}
 				});
 
 				if(typeof existing_record == 'undefined' || existing_record.length == 0) {	
-					PopClick.insert("pageselectable",{ pagehref: page,
+					PopClick_local_clickables.insert("pageselectable",{ pagehref: page,
 						elementhref: elementhref,
 						text: text,
 						selector: selector,
@@ -47,7 +72,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 					if(selector === "btnabox-element"){
 						selector = current_selector;
 					}
-						PopClick.update("pageselectable", {  
+						PopClick_local_clickables.update("pageselectable", {  
 							pagehref: page,
 							elementhref: elementhref,
 							text: text, selector: selector
@@ -57,7 +82,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 						    return row;
 						});
 				}
-				PopClick.commit();
+				PopClick_local_clickables.commit();
 				chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 				//what is sent by the contentscript
 				// alert("This is the background talking : "+msg.msg);
@@ -70,7 +95,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 			var highest_clicks_href = new Array();
 			page = ''+content[0]
 		//Top 10 different
-		var page_existing_top_ten_elements  = PopClick.queryAll("pageselectable", {
+		var page_existing_top_ten_elements  = PopClick_local_clickables.queryAll("pageselectable", {
 			query: {pagehref: page}, sort: [["ID","DESC"], ["clicks", "DESC"]], distinct: ["elementhref","text"]
 		});
 		console.log(page_existing_top_ten_elements);

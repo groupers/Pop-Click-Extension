@@ -1,5 +1,6 @@
 //Add algorithm method to select the element with the most caracters :
 //Order of the words, order of the letters, words in common, letters in common.
+
 // Key press listener on enter key
 addEvent(document, "keypress", function(e) {
 	e = e || window.event;
@@ -48,24 +49,25 @@ if (document.addEventListener) {
 		var array = new Array();
 		array[0] = document.location.href;
 		var parentElementA = undefined, currentElement = targetElement;
-		if(targetElement.nodeName != 'A' && targetElement.className != 'btnabox') {
-			for(i = 0; i < 6; i++){
-				if (currentElement.parentElement == undefined){
-					break;
-				} else {
-					currentElement = currentElement.parentElement;
-				}
-				if(currentElement.nodeName == 'A') {
-					parentElementA = currentElement;
-					break;
+		if(targetElement.className != 'closingCollector'){
+			if(targetElement.nodeName != 'A' && targetElement.className != 'btnabox') {
+				for(i = 0; i < 6; i++){
+					if (currentElement.parentElement == undefined){
+						break;
+					} else {
+						currentElement = currentElement.parentElement;
+					}
+					if(currentElement.nodeName == 'A') {
+						parentElementA = currentElement;
+						break;
+					}
 				}
 			}
-		}
-		if(targetElement.nodeName == 'A' || parentElementA) {
-			if(parentElementA) {
-				targetElement = parentElementA;
-			}
-			array[1] = targetElement.href;
+			if(targetElement.nodeName == 'A' || parentElementA) {
+				if(parentElementA) {
+					targetElement = parentElementA;
+				}
+				array[1] = targetElement.href;
 			// Have to add a condition for when there is no title nor text.
 			// Order : 1.Text, 2.title, 3.child alt, 4. URL compare, 5. tag
 			// Give option to modify name
@@ -83,7 +85,8 @@ if (document.addEventListener) {
 				console.log('Callback object just above');
 			});
 		}
-	});
+	}
+});
 } else if (document.attachEvent) {    
 	document.attachEvent("onclick", function() {
 		var targetElement = event.target || event.srcElement;

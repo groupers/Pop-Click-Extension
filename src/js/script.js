@@ -1,7 +1,7 @@
 
 /** Injected script **/
 
-//=> Good idea to prompt only the parts that it doesn't share in common and propose as such in terms of formating.
+//=> Good idea to prompt only the parts that it doesn't share in common 
 function getAllElementsWithAttribute(attribute) {
   var matchingElements = [];
   var allElements = document.getElementsByTagName('*');

@@ -2,6 +2,8 @@
 var chips = document.getElementsByClassName('chip')
 var genders = ["Female","Male","Other","Irrelevant"]
 var sizeSwitch = false;
+//Should pull from server the data tags
+
 $(document).ready(function() {
 	$('select').material_select();
 	$('.chips').material_chip();
@@ -103,9 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
    in_age.addEventListener('change', function () {
    	ran_age.value = in_age.value
    })
- });
+});
 
-function flipInitialState(){
+function flipInitialState() {
 	var middle = document.getElementById('middle');
 	var bottom = document.getElementById('bottom');
 
@@ -125,7 +127,7 @@ function flipInitialState(){
 	sizeSwitch = !sizeSwitch;
 }
 
-function initialInterests(){
+function initialInterests() {
 	var interests = []
 	Array.from(chips).forEach(function(element) {
 		if(element.value == 1 ){
@@ -135,7 +137,7 @@ function initialInterests(){
 	return interests
 }
 
-function initialPost(){
+function initialPost() {
 	event.preventDefault();
 	var today = new Date()
 	var dd = today.getDate();
@@ -175,8 +177,42 @@ function displayElement(obj) {
 }
 
 function initialResponse(str){
-	console.log(str)
+	var profile = new Array();
+	profile[0] = JSON.parse(str).profile
+	var stringifiedProfile = JSON.stringify(profile)
+	chrome.runtime.sendMessage({createprofile: stringifiedProfile}, function(response) {
+		fetchFileContent('http://localhost:8000/popclick/api/get/'+profile[0], logging)
+	});
 }
+
+function logging(tes) {
+	console.log(tes);
+	tes = JSON.parse(tes);
+	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
+		console.log('auth on board')
+	});
+}
+
+function fetchFileContent(URL, cb) {
+	var xhr = new XMLHttpRequest()
+	console.log('sent');
+	console.log('URL'+URL)
+	xhr.ontimeout = function() {
+		console.error('Please contact support.')
+	};
+
+	xhr.onload = function () {
+		if (xhr.readyState === 4) {
+			if (xhr.status === 200) {
+				cb(xhr.response);
+			}
+		}
+	};
+	xhr.open('GET', URL, true)
+	xhr.send()
+}
+
+//Remember to toast if form isn't complete
 function postAction(logtime, age, interests, gender, signed, callback){
 	var postUrl = 'http://localhost:8000/popclick/api/create/';
     // Set up an asynchronous AJAX POST request
@@ -193,14 +229,14 @@ function postAction(logtime, age, interests, gender, signed, callback){
                 // statusDisplay.innerHTML = 'Saved!';
                 callback(xhr.responseText);
                 // window.setTimeout(window.close, 1000);
-              } else {
+            } else {
                 // Show what went wrong
                 // statusDisplay.innerHTML = 'Error saving: ' + xhr.statusText;
-              }
             }
-          };
+        }
+    };
     // };JSON.stringify(initialInterests)
-    xhr.send(JSON.stringify({"logtime":logtime,"age":age,"gender":gender,"interests":interests}));
+    xhr.send(JSON.stringify({"logtime":logtime, "age":age, "gender":gender, "interests":interests}));
     // statusDisplay.innerHTML = 'Saving...';
 
-  }
+}

@@ -2,17 +2,7 @@
 /** Using content script as a front end processing tier **/
 
 //HTML DOM ELEMENT SHORTS
-var p = 0;
-var a = 1;
-var d = 2;
-var ac = 6;
-// listing
-var ul = 4;
-var li = 5;
-
-//minor 
-var b = -1;
-var i = -2;
+var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5, b = -1, i = -2;
 var suggestedElements;
 //Adding extra properties
 var btnabox = 10;
@@ -31,42 +21,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 });
 
-/**  %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%% **/
-// String processing, so that we can slice and insert an item
-String.prototype.splice = function(idx, rem, str) {
-	return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
-};
-
-// Array Remove - By John Resig (MIT Licensed)
-Array.prototype.remove = function(from, to) {
-	var rest = this.slice((to || from) + 1 || this.length);
-	this.length = from < 0 ? this.length + from : from;
-	return this.push.apply(this, rest);
-};
-
-// Array Contains String + Trimming.
-Array.prototype.contains = function(obj) {
-	var i = this.length;
-	while (i--) {
-		if (this[i].toString().trim() === obj.toString().trim()) {
-			return true;
-		}
-	}
-	return false;
-}
-
-function containsKey(map, key){
-	for (var prop in map) {
-		if(prop === key){
-			return true;
-		}
-	}
-	return false;
-}
-
-/** &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& &&&&&&&& **/
 // Generate DOM element <p>
-
 function e(elementShort, text, href, ID, classname, order, kind) {
 	var returnvalue = "";
 	text = text.trim();
@@ -107,19 +62,16 @@ function e(elementShort, text, href, ID, classname, order, kind) {
 	    default:
 	    returnvalue = text;
 	    break;
+	  }
+	  if(classname) {
+	  	returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' class="' + classname + '"');
+	  }
+	  if(kind) {
+	  	returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' kind="' + kind + '"');
+	  }
+	  return returnvalue;
 	}
-	if(classname) {
-		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' class="' + classname + '"');
-	}
-	if(kind) {
-		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' kind="' + kind + '"');
-	}
-	return returnvalue;
-}
-
-//Added call back updating the str
-
-generateDialogContent();
+//This only works if ButtonCollection already exists
 function generateDialogContent(url) {
 	if (typeof url === 'undefined') { 
 		url = ''; 
@@ -145,7 +97,7 @@ function generateDialogContent(url) {
 		}
 		randomListOfAnchors[randomListOfAnchorsIterator]
 		var randomListOfAnchorsIterator = 0;
-			  // For performance reasons we should replace the innerHTML by an append.
+
 			  for (i = 0; i < 10; i++){
 			  	
 			  	if(highest_clicks_text[i] != undefined) {
@@ -153,7 +105,9 @@ function generateDialogContent(url) {
 
 			  	} else {
 			  		var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
-			  		var anchor = e(a, document.getElementsByTagName('a')[currentIndex].text, document.getElementsByTagName('a')[currentIndex].href, "", "btnabox", i);
+			  		if(document.getElementsByTagName('a')[currentIndex]){
+			  			var anchor = e(a, document.getElementsByTagName('a')[currentIndex].text, document.getElementsByTagName('a')[currentIndex].href, "", "btnabox", i);
+			  		}
 			  		randomListOfAnchorsIterator++;
 			  	}
 			  	dialogbuttons.innerHTML += anchor;
@@ -167,33 +121,6 @@ function generateDialogContent(url) {
 			});
 }
 
-// Could be useful -- to check if a website is available //
-function load(target, url) {
-	var r = new XMLHttpRequest();
-	r.open("GET", url, true);
-	r.onreadystatechange = function () {
-		if (r.readyState != 4 || r.status != 200) return;
-		target.innerHTML = r.responseText;
-	};
-	r.send();
-}
-var forceRedraw = function(element) {
-
-	if (!element) { return; }
-
-	var n = document.createTextNode(' ');
-    var disp = element.style.display;  // don't worry about previous display style
-
-    element.appendChild(n);
-    element.style.display = 'none';
-
-    setTimeout(function() {
-    	element.style.display = disp;
-    	n.parentNode.removeChild(n);
-    },20); // you can play with this timeout to make it as short as possible
-}
-/** Second mesure **/
-/** If sending a message to the localstorage server failed **/
 var str = [];
 for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++) {
 	str.push(document.getElementsByTagName('a')[i]);
@@ -209,51 +136,36 @@ if(str.length >= 2) {
 		}
 	}
 }
-console.log(str.length + "length");
-var string = "";
-var inListElements = 1;
+var string = "", inListElements = 1;
 
 for (i=0; i < str.length; i++) {
 	var text = "";
 	if(str[i].text.length == 0 && str[i].title != "") {
 		text = str[i].title;
-	}else {
+	} else {
 		text = str[i].text;
 	}
 	var currentElement = e(a, text, str[i].href, "", "btnabox", inListElements);
-	  	// Verifies if the element exists, in case some how in the handling something went wrong.
-	  	//Problem when the anchor tag starts with # for some reason.
-	  	//Example: https://developer.chrome.com/extensions/content_scripts#pi
-	  	if(currentElement || currentElement != "") {
-	  		string += currentElement;
-	  		++inListElements;
-	  	}
-	  }
+	// Verifies if the element exists, in case some how in the handling something went wrong.
+	//Problem when the anchor tag starts with # for some reason.
+	//Example: https://developer.chrome.com/extensions/content_scripts#pi
+	if(currentElement || currentElement != "") {
+		string += currentElement;
+		++inListElements;
+	}
+}
 
-	  var listofnameElements = ""
-	  var mapOfElements = new Map();
-	  for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
-	  	var currentAnchor = document.getElementsByTagName('a')[i];
-	  	listofnameElements += currentAnchor.text.trim()+" ,";
-	  	mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
-	  }
+var listofnameElements = ""
+var mapOfElements = new Map();
+for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
+	var currentAnchor = document.getElementsByTagName('a')[i];
+	listofnameElements += currentAnchor.text.trim()+" ,";
+	mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
+}
+
 // If no text nor title find end half of the url :
 // /something/ or /something
 // #something
-
-//Reorder elements so that they can fit
-//Remove elements with href starting with javascript (y)
-
-//When dialogOpen and shift key pressed, click action on inputfield
-
-//Make a color for a different category of elements for the backgrounds ()
-
-//Record also the Dialog buttons when clicked meaning they have to be stored in array/Hashmap
-
-//Record what has been clicked but also analyse the elements parent structure.
-
-
-
 
 // Backend processing on python
 // When multiple text or href seem to have similar substrings remove uncommons
@@ -275,6 +187,8 @@ var input = document.getElementById("AwesompleteInputfield");
 new Awesomplete(input, {
 	list: listofnameElements
 });
+generateDialogContent();
+
 var dialogBoxVisible = false;
 // Observer for when the div element has it's class attribute altered
 /** Observing the visibility of the dialog box **/
@@ -286,108 +200,6 @@ var observerDisplay = new MutationObserver(function(mutations) {
 	});
 });
 observerDisplay.observe(div, { attributes: true });
-
-/* ------------ ------------------ ------------------ ------------------ ------------------ */
-//Acts as a CSS selector
-/** Allows use to uniquely identify an HTML element **/
-function getPath(element) {
-	var path, node = element;
-	while(node) {
-		var name = node.localName;
-		if (!name) break;
-		name = name.toLowerCase();
-		if (inParentSameNodeName(node) > 1) {
-			name += ':eq(' + (indexInParent(node)) + ')';
-		}
-		path = name + (path ? '>' + path : '');
-		node = node.parentNode;
-	}
-	return path;
-}
-
-// Gets the index of the element among others who have the same nodeName
-function indexInParent(node) {
-	var children = node.parentNode.childNodes;
-	var num = 0;
-	for (var i=0; i<children.length; i++) {
-		if (children[i]==node) return num;
-		if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
-			num++;
-		}
-	}
-	return -1;
-}
-
-// Get number of elements containing the same nodeName
-function inParentSameNodeName(node) {
-	var children = node.parentNode.childNodes;
-	var num = 0;
-	for (var i=0; i<children.length; i++) {
-		if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
-			num++;
-		}
-	}
-	return num;	
-}
-
-// CSS Selector element finder
-function findElementFromPath(path) {
-	if (path > 0) throw 'Requires one element.';
-	var mainIterator = 0; var innerIterator = 0;
-	var arrayOfPath = path.split("\u003e");
-	var currentNodeList = document.getElementsByTagName('html')[0];
-	if (currentNodeList.localName === arrayOfPath[0]) {
-		++mainIterator;
-		while(true) {
-			var oldIterator = mainIterator;
-			if(mainIterator < arrayOfPath.length) {
-				currentNodeList = currentNodeList.childNodes;
-				try {
-					var currentSplit = [];
-					var currentSplitCounter = 0;
-					for(var i = 0; i<currentNodeList.length; i++) {
-						try {
-							if(/[a-zA-Z]+(:eq\(\d+\))/.test(arrayOfPath[mainIterator])) {  
-								currentSplit = arrayOfPath[mainIterator].split(/(:eq\(|\))/);
-								currentSplit[2] = parseInt(currentSplit[2]);
-								if (currentNodeList[i]) {
-
-									if(currentSplit[0] === currentNodeList[i].localName.toLowerCase()) {
-
-										if(currentSplitCounter === currentSplit[2]) {
-											currentNodeList = currentNodeList[i];
-											mainIterator++;
-											console.log(currentNodeList);
-											console.log("current node just above");
-											break;
-										}
-										currentSplitCounter++;
-									}
-								}
-							}
-							else if(arrayOfPath[mainIterator] === currentNodeList[i].localName.toLowerCase()) {
-								mainIterator++;
-								currentNodeList = currentNodeList[i];
-							}
-						} catch(err) {
-							console.log('err' + err.message);
-						}
-					}
-				} catch(err) {
-					console.log('err' + err.message);
-				}
-				if (oldIterator == mainIterator) {
-					break;
-				}
-			} else {
-				break;
-			}
-		}
-	}			
-	return currentNodeList;
-
-}
-/* ------------ ------------------ ------------------ ------------------ ------------------------------------ */
 
 /* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
 // Injecting script 

@@ -10,11 +10,12 @@
         "http://*/*"
       ],
       "js": [
+        "src/js/helpers.js",
         "src/js/levenshtein.js",
-        "src/js/localstoragedb.js",
+        "src/js/3rdparty/localstoragedb.js",
         "src/js/getters.js",
         "src/js/listeners.js",
-        "src/js/awesomplete.min.js",
+        "src/js/3rdparty/awesomplete.min.js",
         "src/js/contentscript.js"
       ],
       "css" : [
@@ -32,12 +33,12 @@
     "src/images/sparkles.gif",
     "src/view/popup.html",
     "src/css/awesomplete.css",
-    "src/js/awesomplete.min.js",
+    "src/js/3rdparty/awesomplete.min.js",
     "src/js/script.js"
   ],
    "background": {
      "scripts": [
-      "src/js/localstoragedb.js"
+      "src/js/3rdparty/localstoragedb.js"
       ,"src/js/background.js"
     ]
   },
