@@ -53,7 +53,7 @@ if (document.addEventListener) {
 		if(targetElement.className != 'closingCollector'){
 			if(targetElement.nodeName != 'A' && targetElement.className != 'btnabox') {
 				for(i = 0; i < 6; i++){
-					if (currentElement.parentElement == undefined){
+					if (currentElement.parentElement == undefined) {
 						break;
 					} else {
 						currentElement = currentElement.parentElement;
@@ -70,25 +70,25 @@ if (document.addEventListener) {
 				}
 				array[1] = targetElement.href;
 
-			// Have to add a condition for when there is no title nor text.
-			// Order : 1.Text, 2.title, 3.child alt, 4. URL compare, 5. tag
-			// Give option to modify name
-			array[2] = targetElement.text.trim() || "not-found"
-			if(targetElement.className != 'btnabox') {
-				array[3] = getPath(targetElement);
-			} else {
-				array[2] = array[2].replace(/\s\[\d*\]$/,"")
+				// Have to add a condition for when there is no title nor text.
+				// Order : 1.Text, 2.title, 3.child alt, 4. URL compare, 5. tag
+				// Give option to modify name
+				array[2] = targetElement.text.trim() || "not-found"
+				if(targetElement.className != 'btnabox') {
+					array[3] = getPath(targetElement);
+				} else {
+					array[2] = array[2].replace(/\s\[\d*\]$/,"")
 
-				// Get object selector with same page,href
-				array[3] = 'btnabox-element';
-			}
-			var stringifiedArray = JSON.stringify(array);
-			chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
-				if(b && b.backgroundMsg){
-					console.log(b.backgroundMsg);
+					// Get object selector with same page,href
+					array[3] = 'btnabox-element';
 				}
-				console.log('Callback object just above');
-			});
+				var stringifiedArray = JSON.stringify(array);
+				chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
+					if(b && b.backgroundMsg){
+						console.log(b.backgroundMsg);
+					}
+					console.log('Callback object just above');
+				});
 		}
 	}
 });

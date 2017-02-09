@@ -44,7 +44,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 });
 /** Handles selectable elements **/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-	var content, page, operation, pageobject;
+	var content, page, operation, pageobject, sendlogtime, sendclicks = 1;
 	if (msg && msg.sendingevent) {
 		content =  new Array(JSON.parse(msg.sendingevent))[0];
 		page = ''+content[0];
@@ -91,6 +91,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 					}, function(row) {
 						row.clicks = ++current_clicks;
 						    // the update callback function returns to the modified record
+						    sendclicks = row.clicks;
 						    return row;
 						});
 					operation = "update";
@@ -98,15 +99,16 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 				PopClick_local_clickables.commit();
 				PopClick_profile.update("profile", function(row){
 					row.logtime = getLogtime();
+					sendlogtime = row.logtime;
 				});
 				PopClick_profile.commit();
 				chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 				//what is sent by the contentscript
 				// alert("This is the background talking : "+msg.msg);
 				sendResponse({backgroundMsg: "bump"});
-			});
-				console.log(pageobject)
-				postFormatting(pageobject, operation)
+				});
+
+				postFormatting(page, elementhref, text, selector, sendclicks, operation, sendlogtime)
 			}
 		} else if(msg && msg.sendinginitialisation) {
 			content = new Array(JSON.parse(msg.sendinginitialisation));
@@ -127,15 +129,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 });
 
-function postFormatting(pageobject_id, operation){
-	var object = PopClick_local_clickables.queryAll("pageselectable", {
-		query: {
-			ID: pageobject_id
-		}
-	});
-	console.log(pageobject_id)
-	console.log(object)
-	console.log(operation)
+function postFormatting(page, elementhref, text, selector, clicks, operation, logtime){
+	var profile = [PopClick_profile.queryAll("profile")[0].auth, logtime]
+	var pageobject = [page, elementhref, text, selector]
+	var interaction = [operation, clicks]
+	var jsonObj = {"profile":profile,"pageobject":pageobject,"interaction":interaction}
+	jsonObj = JSON.stringify(jsonObj, null, 4);
+	console.log(jsonObj)
 }
 //Remember to toast if form isn't complete
 function postAccountCreation(user, selectable, callback) {

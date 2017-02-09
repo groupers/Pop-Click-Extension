@@ -1,7 +1,7 @@
 // Get today's date and time in a properly javascript/python format
-function getObjectFromHref(href){
+function getObjectFromHref(href) {
 	for( i=0; i < document.getElementsByTagName('a').length; i++) {
-		if(href === document.getElementsByTagName('a')[i].href){
+		if(href === document.getElementsByTagName('a')[i].href) {
 			return document.getElementsByTagName('a')[i];
 		}
 	}
@@ -13,19 +13,9 @@ function getLogtime() {
 	var yyyy = today.getFullYear();
 	var HH = today.getHours();
 	var MM = today.getMinutes();
-	if(dd<10) 
-	{
-		dd='0'+dd;
-	} 
-
-	if(mm<10) 
-	{
-		mm='0'+mm;
-	}
-	if(HH<10)
-	{
-		HH='0'+HH;
-	}
+	if(dd<10) { dd='0'+dd; } 
+	if(mm<10) { mm='0'+mm; }
+	if(HH<10) {	HH='0'+HH; }
 	today = yyyy+'-'+mm+'-'+dd+' '+HH+':'+MM;
 	return today
 }
@@ -53,9 +43,9 @@ Array.prototype.contains = function(obj) {
 	return false;
 }
 
-function containsKey(map, key){
-	for (var prop in map) {
-		if(prop === key){
+function containsKey(map, key) {
+	for(var prop in map) {
+		if(prop === key) {
 			return true;
 		}
 	}
