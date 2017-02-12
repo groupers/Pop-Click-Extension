@@ -82,6 +82,8 @@ if (document.addEventListener) {
 					// Get object selector with same page,href
 					array[3] = 'btnabox-element';
 				}
+				array[4] = document.location.hostname;
+				array[5] = document.location.pathname;
 				var stringifiedArray = JSON.stringify(array);
 				chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
 					if(b && b.backgroundMsg){

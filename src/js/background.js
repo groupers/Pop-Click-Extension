@@ -23,20 +23,20 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdate
 
 /** Handles profile **/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+	var current_time = getLogtime();
 	if(msg && msg.createprofile) {
 		var profile = new Array(JSON.parse(msg.createprofile));
 		var tok = profile[0][0]
 		console.log(tok)
-		PopClick_profile.insert("profile", {token: ''+tok, privatekey: '', logtime: getLogtime()});
+		PopClick_profile.insert("profile", {token: ''+tok, privatekey: '', logtime: current_time});
 		PopClick_profile.commit();
 	}
 	if(msg && msg.updateprivate) {
 		var priv  = msg.updateprivate
 		console.log(priv)
-		PopClick_profile.update("profile", function(row){ 
+		PopClick_profile.update("profile",{}, function(row){ 
 			row.privatekey = priv;
-			row.logtime = getLogtime();
-			console.log(row)
+			row.logtime = current_time;
 			return row;
 		});
 		PopClick_profile.commit();
@@ -44,13 +44,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 });
 /** Handles selectable elements **/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-	var content, page, operation, pageobject, sendlogtime, sendclicks = 1;
+	var content, website, pagepath, page, operation, pageobject, sendlogtime, sendclicks = 1;
 	if (msg && msg.sendingevent) {
 		content =  new Array(JSON.parse(msg.sendingevent))[0];
 		page = ''+content[0];
 		var elementhref = ''+content[1];
 		var text = ''+content[2];
 		var selector = ''+content[3];
+		website = ''+content[4];
+		pagepath = ''+content[5];
 			// var testing_record = PopClick_local_clickables.queryAll("pageselectable", { query: {elementhref: "https://www.facebook.com/"
 			// 	, pagehref: "https://www.facebook.com/#", }})
 			if(page && elementhref && text) {
@@ -108,7 +110,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 				sendResponse({backgroundMsg: "bump"});
 				});
 
-				postFormatting(page, elementhref, text, selector, sendclicks, operation, sendlogtime)
+				postFormatting(website, pagepath, page, elementhref, text, selector, sendclicks, operation, sendlogtime)
 			}
 		} else if(msg && msg.sendinginitialisation) {
 			content = new Array(JSON.parse(msg.sendinginitialisation));
@@ -128,18 +130,19 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 		sendResponse({hc_text: highest_clicks_text, hc_href: highest_clicks_href});
 	}
 });
-
-function postFormatting(page, elementhref, text, selector, clicks, operation, logtime){
-	var profile = [PopClick_profile.queryAll("profile")[0].auth, logtime]
-	var pageobject = [page, elementhref, text, selector]
+function postFormatting(website, pagepath, page, elementhref, text, selector, clicks, operation, logtime) {
+	console.log('--- posting ---')
+	var profile_col = PopClick_profile.queryAll("profile")[0]
+	var profile = [profile_col.privatekey, logtime]
+	var pageobject = [page, elementhref, text, selector, website, pagepath]
 	var interaction = [operation, clicks]
-	var jsonObj = {"profile":profile,"pageobject":pageobject,"interaction":interaction}
-	jsonObj = JSON.stringify(jsonObj, null, 4);
-	console.log(jsonObj)
+	var jsonObj = {"profile":profile, "pageobject":pageobject, "interaction":interaction}
+	jsonObj = JSON.stringify(jsonObj);
+	postSendObject(profile_col.token, jsonObj, console.log)
 }
 //Remember to toast if form isn't complete
-function postAccountCreation(user, selectable, callback) {
-	var postUrl = 'http://localhost:8000/popclick/api/'+token+'/';
+function postSendObject(token, selectable, callback) {
+	var postUrl = 'http://localhost:8000/popclick/api/add/'+token+'/';
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
     xhr.open('POST', postUrl, true);
@@ -160,7 +163,7 @@ function postAccountCreation(user, selectable, callback) {
             }
         }
     };
-    xhr.send(JSON.stringify({}));
+    xhr.send(selectable);
 }
 
 //Add click to collection of clicks
