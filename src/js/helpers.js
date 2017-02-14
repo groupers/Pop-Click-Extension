@@ -16,6 +16,7 @@ function getLogtime() {
 	if(dd<10) { dd='0'+dd; } 
 	if(mm<10) { mm='0'+mm; }
 	if(HH<10) {	HH='0'+HH; }
+	if(MM<10) { MM='0'+MM; }
 	today = yyyy+'-'+mm+'-'+dd+' '+HH+':'+MM;
 	return today
 }
