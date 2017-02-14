@@ -14,10 +14,22 @@ if(PopClick_local_clickables.isNew()) {
 }
 
 var myURL = "about:blank"; // A default url just in case below code doesn't work
+var sentShort_term = {}
+
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdated should fire when the selected tab is changed or a link is clicked 
 	chrome.tabs.getSelected(null, function(tab) {
 		myURL = tab.url;
-		chrome.tabs.sendMessage(tabId, {action: "refresh_dialog", url: myURL}, function(response) {});
+		chrome.tabs.sendMessage(tabId, {action: "refresh_dialog", url: myURL}, function(response) {
+		});
+		chrome.tabs.sendMessage(tabId, {action: "sendpage_info"}, function(response) {
+			// If the url updates and we have already visited this link in the past in last 5 seconds don't post time
+			// if(response && (!sentShort_term[tab.url] || (sentShort_term[tab.url] && (((new Date() - sentShort_term[tab.url])/1000) < 5.0)))) {
+				// sentShort_term[tab.url] = (new Date())
+			if(response && response.objects){
+				var profile_col = PopClick_profile.queryAll("profile")[0]
+				postPageObjects(profile_col.token, profile_col.privatekey, response.objects)
+			}
+		});
 	});
 });
 
@@ -33,8 +45,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 	if(msg && msg.updateprivate) {
 		var priv  = msg.updateprivate
-		console.log(priv)
-		PopClick_profile.update("profile",{}, function(row){ 
+		PopClick_profile.update("profile", {}, function(row) { 
 			row.privatekey = priv;
 			row.logtime = current_time;
 			return row;
@@ -57,7 +68,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 			// 	, pagehref: "https://www.facebook.com/#", }})
 			if(page && elementhref && text) {
 				var existing_record; 
-				if(text === "not-found" || selector === "btnabox-element"){
+				if(text === "not-found" || selector === "btnabox-element") {
 					existing_record = PopClick_local_clickables.queryAll("pageselectable", {
 						query: {elementhref: elementhref, pagehref: page}
 					});
@@ -82,7 +93,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 						selector = current_selector;
 					}
 					//Should check for all existing_records. In case we add some later on
-					if(text === "not-found" && existing_record[0].text != "not-found"){
+					if(text === "not-found" && existing_record[0].text != "not-found") {
 						text = current_text;
 					}
 					PopClick_local_clickables.update("pageselectable", {  
@@ -99,7 +110,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 					operation = "update";
 				}
 				PopClick_local_clickables.commit();
-				PopClick_profile.update("profile", function(row){
+				PopClick_profile.update("profile", function(row) {
 					row.logtime = getLogtime();
 					sendlogtime = row.logtime;
 				});
@@ -108,7 +119,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 				//what is sent by the contentscript
 				// alert("This is the background talking : "+msg.msg);
 				sendResponse({backgroundMsg: "bump"});
-				});
+			});
 
 				postFormatting(website, pagepath, page, elementhref, text, selector, sendclicks, operation, sendlogtime)
 			}
@@ -130,19 +141,30 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 		sendResponse({hc_text: highest_clicks_text, hc_href: highest_clicks_href});
 	}
 });
+
+function postPageObjects(token, auth, objects){
+	var jsonObj = JSON.stringify({"profile":auth, "pageobjects":objects});
+	postSendObject(token, jsonObj, "suggestion", console.log)
+}
+
 function postFormatting(website, pagepath, page, elementhref, text, selector, clicks, operation, logtime) {
-	console.log('--- posting ---')
 	var profile_col = PopClick_profile.queryAll("profile")[0]
 	var profile = [profile_col.privatekey, logtime]
 	var pageobject = [page, elementhref, text, selector, website, pagepath]
 	var interaction = [operation, clicks]
 	var jsonObj = {"profile":profile, "pageobject":pageobject, "interaction":interaction}
 	jsonObj = JSON.stringify(jsonObj);
-	postSendObject(profile_col.token, jsonObj, console.log)
+	postSendObject(profile_col.token, jsonObj, "add", console.log)
 }
 //Remember to toast if form isn't complete
-function postSendObject(token, selectable, callback) {
-	var postUrl = 'http://localhost:8000/popclick/api/add/'+token+'/';
+function postSendObject(token, selectable, task, callback) {
+
+	var postUrl = "none";
+	if (task === "add") {
+		postUrl = 'http://localhost:8000/popclick/api/add/'+token+'/';
+	}else if(task === "suggestion") {
+		postUrl = 'http://localhost:8000/popclick/api/suggestion/'+token+'/';
+	}
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
     xhr.open('POST', postUrl, true);

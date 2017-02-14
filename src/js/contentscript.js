@@ -12,9 +12,24 @@ var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_hr
 
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
-	if (msg.action == 'refresh_dialog') {
+	if(msg.action == 'refresh_dialog') {
 
 		generateDialogContent(msg.url);
+	}
+
+	if(msg.action = 'sendpage_info') {
+		var objects = []
+		for (i = 0 ; i < document.getElementsByTagName('a').length && i < 500; i++) {
+			var curr = document.getElementsByTagName('a')[i]
+			var arr = []
+			arr.push(curr.baseURI)
+			arr.push(curr.href)
+			arr.push(curr.text)
+			arr.push(getPath(curr))
+			objects.push(arr)
+		}
+
+		sendResponse({objects: objects});
 	}
 });
 
