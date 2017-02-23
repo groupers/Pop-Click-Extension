@@ -15,11 +15,14 @@
         "src/js/3rdparty/localstoragedb.js",
         "src/js/getters.js",
         "src/js/listeners.js",
+        "src/js/3rdparty/jquery-3.1.1.min.js",
+        "src/js/3rdparty/toastr.min.js",
         "src/js/3rdparty/awesomplete.min.js",
         "src/js/contentscript.js"
       ],
       "css" : [
         "src/css/awesomplete.css",
+        "src/css/toastr.min.css",
         "src/css/injectedstylesheet.css"
       ]
 

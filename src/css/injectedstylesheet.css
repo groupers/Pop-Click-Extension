@@ -5,7 +5,8 @@
   -moz-border-radius: 6;
   border-radius: 6px;
   transition: all .1s linear;
-  font-family: Arial;
+  font-family: Arial !important;
+  font-style: cursive !important;
   color: white !important;
   letter-spacing: 0.5px;
   word-spacing: .1em;
@@ -70,17 +71,40 @@
   padding:20px;
   z-index: 9998;
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 300px;
-  height: 250px;
-  width:800px;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 300px !important;
+  height: 250px !important;
+  width:800px !important;
   margin:0 auto;
   background-color: rgba(255,255,255,0.9);
   color: white;
   padding: 10;
   box-shadow: 3px 3px 3px 3px #888888;
 }
+/*#TheDialogBox {
+  overflow:auto !important; 
+  display: table !important;
+  border-style: solid !important;
+  border-width: medium !important;
+  border-color: #1E88E5 !important;
+  -webkit-border-radius: 20px !important;
+  -moz-border-radius: 20px !important;
+  border-radius: 20px !important;
+  padding:20px !important;
+  z-index: 9998 !important;
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 300px !important;
+  height: 250px !important;
+  width:800px !important;
+  margin:0 auto !important;
+  background-color: rgba(255,255,255,0.9) !important;
+  color: white !important;
+  padding: 10 !important;
+  box-shadow: 3px 3px 3px 3px #888888 !important;
+}*/
 .closingCollector {
   letter-spacing:1px;
   font-size: 10px;

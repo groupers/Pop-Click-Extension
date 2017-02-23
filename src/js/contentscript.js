@@ -3,7 +3,8 @@
 var suggestedElements;
 //Adding extra properties
 var btnabox = 10;
-
+console.log("Distance")
+console.log(levenshtein_distance_a("hubrle","hubble"))
 //Not necessary
 var array = new Array();
 array[0] = document.location.href;
@@ -31,12 +32,18 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 		sendResponse({objects: objects});
 	}
+	if(msg.action = 'feedback_info' && msg.numbers) {
+		for(i=0; i<msg.numbers.length; i++){
+			console.log(document.getElementsByTagName('a')[msg.numbers[i]].text)
+		}
+	}
 });
 
 //HTML DOM ELEMENT SHORTS
-var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5;
+var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5, script = 7, link = 8;
 // Generate DOM element <p>
 function e(elementShort, text, href, ID, classname, order, kind) {
+	// console.log(text);
 	var returnvalue = "";
 	text = text.trim();
 	if (text.length == 0 || typeof text === 'undefined') return ;
@@ -45,6 +52,7 @@ function e(elementShort, text, href, ID, classname, order, kind) {
 	if (typeof classname === 'undefined') { classname = ''; }
 	if (typeof order === 'undefined') { order = ''; }
 	if (typeof kind === 'undefined') { kind = ''; }
+	if (typeof text === 'undefined') { text = ''; }
 	switch(elementShort) {
 		case 0:
 		returnvalue = "<p>" + text + "</p>";
@@ -71,20 +79,26 @@ function e(elementShort, text, href, ID, classname, order, kind) {
 	    case 6:
 	    returnvalue = '<a id="' + ID + '" onclick="' + href +'">' + text + '</a>'
 	    break;
+	    case 7:
+	    returnvalue = '<script src="'+ href +'"></script>'
+	    break;
+	    case 8:
+	    returnvalue = '<link rel="stylesheet" href="' +href + '">'
+	    break;
 	    case 10:
 	    return
 	    default:
 	    returnvalue = text;
 	    break;
-	  }
-	  if(classname) {
-	  	returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' class="' + classname + '"');
-	  }
-	  if(kind) {
-	  	returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' kind="' + kind + '"');
-	  }
-	  return returnvalue;
 	}
+	if(classname) {
+		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' class="' + classname + '"');
+	}
+	if(kind) {
+		returnvalue = returnvalue.splice(returnvalue.indexOf('>'), 0, ' kind="' + kind + '"');
+	}
+	return returnvalue;
+}
 //This only works if ButtonCollection already exists
 function generateDialogContent(url) {
 	if (typeof url === 'undefined') { 
@@ -110,21 +124,30 @@ function generateDialogContent(url) {
 			}
 		}
 		randomListOfAnchors[randomListOfAnchorsIterator]
+		console.log(randomListOfAnchors)
 		var randomListOfAnchorsIterator = 0;
-
-			  for (i = 0; i < 10; i++){
-			  	
-			  	if(highest_clicks_text[i] != undefined) {
-			  		var anchor = e(a, highest_clicks_text[i], highest_clicks_href[i], "", "btnabox", i, "pers");
-
-			  	} else {
-			  		var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
+		var dialog_elements = {}
+		for (i = 0; i < 10; i++){
+			var text, href;
+			if(highest_clicks_text[i] != undefined) {
+				text = highest_clicks_text[i];
+				href = highest_clicks_href[i];
+				var anchor = e(a, text, href, "", "btnabox", i, "pers");
+			} 
+			else {
+				var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
+			  		// console.log(currentIndex)
 			  		if(document.getElementsByTagName('a')[currentIndex]){
-			  			var anchor = e(a, document.getElementsByTagName('a')[currentIndex].text, document.getElementsByTagName('a')[currentIndex].href, "", "btnabox", i);
+			  			text = document.getElementsByTagName('a')[currentIndex].text;
+			  			href = document.getElementsByTagName('a')[currentIndex].href;
+			  			var anchor = e(a, text, href, "", "btnabox", i);
 			  		}
 			  		randomListOfAnchorsIterator++;
 			  	}
-			  	dialogbuttons.innerHTML += anchor;
+			  	if(dialog_elements[text] != href){
+			  		dialog_elements[text]= href;
+			  		dialogbuttons.innerHTML += anchor;
+			  	}
 			  }
 			  for(i = 0 ; i < document.getElementsByClassName('btnabox').length; i++) {
 			  	var currentElement =document.getElementsByClassName('btnabox')[i];
@@ -134,6 +157,7 @@ function generateDialogContent(url) {
 			  }		  
 			});
 }
+
 
 var str = [];
 for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++) {
@@ -169,14 +193,17 @@ for (i=0; i < str.length; i++) {
 	}
 }
 
-var listofnameElements = ""
+var listofnameElements = [];
 var mapOfElements = new Map();
 for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
 	var currentAnchor = document.getElementsByTagName('a')[i];
-	listofnameElements += currentAnchor.text.trim()+" ,";
-	mapOfElements.set(currentAnchor.text.trim(),currentAnchor.href);
+	var currentElement = (currentAnchor.text).replace(/\s/g,' ');
+	if (!/javascript(\(.*\)|:)|.*\/\#$/.test(currentAnchor.href)) {
+		listofnameElements.push(currentElement);
+		mapOfElements.set(currentElement,currentAnchor.href);
+	}
 }
-
+console.log(mapOfElements)
 // If no text nor title find end half of the url :
 // /something/ or /something
 // #something
@@ -198,11 +225,22 @@ div.style.position = "float";
 div.style.left = "50px";
 div.style.display = "none";
 var input = document.getElementById("AwesompleteInputfield");
+function sorting(text, input) {
+	return true;
+}
 new Awesomplete(input, {
-	list: listofnameElements
+	list: listofnameElements,
+	filter: function (text, input) {
+		if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 && ( levenshtein_distance_a(text.toLowerCase(),input.toLowerCase())>0 && levenshtein_distance_a(text.toLowerCase(),input.toLowerCase()) < 3) && input.length > 2){
+			input = text
+		}
+		return ((text.toLowerCase()).includes(input.toLowerCase()));
+	}
 });
 generateDialogContent();
 
+// toastr.info('Are you the 6 fingered man?')
+toastr["info"]("ThisIsALink", "Press [1]").css("width","150px").css('height','80px')
 var dialogBoxVisible = false;
 // Observer for when the div element has it's class attribute altered
 /** Observing the visibility of the dialog box **/

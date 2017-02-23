@@ -25,11 +25,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdate
 			// If the url updates and we have already visited this link in the past in last 5 seconds don't post time
 			// if(response && (!sentShort_term[tab.url] || (sentShort_term[tab.url] && (((new Date() - sentShort_term[tab.url])/1000) < 5.0)))) {
 				// sentShort_term[tab.url] = (new Date())
-			if(response && response.objects){
-				var profile_col = PopClick_profile.queryAll("profile")[0]
-				postPageObjects(profile_col.token, profile_col.privatekey, response.objects)
-			}
-		});
+				if(response && response.objects){
+					var profile_col = PopClick_profile.queryAll("profile")[0]
+					postPageObjects(profile_col.token, profile_col.privatekey, response.objects, tabId)
+				}
+			});
 	});
 });
 
@@ -142,11 +142,17 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 });
 
-function postPageObjects(token, auth, objects){
+function postPageObjects(token, auth, objects, tab) {
 	var jsonObj = JSON.stringify({"profile":auth, "pageobjects":objects});
-	postSendObject(token, jsonObj, "suggestion", console.log)
+	postSendObject(token, jsonObj, "suggestion", tab, console.log)
 }
 
+function feedback(content_feedback, tab) {
+	var numbers = JSON.parse(content_feedback)["recommendation"].replace(/(\]|\[)/g,'').split(',').map(Number);
+	console.log(numbers)
+	chrome.tabs.sendMessage(tab, {action: "feedback_info", numbers: numbers}, function(response) {
+	});
+}
 function postFormatting(website, pagepath, page, elementhref, text, selector, clicks, operation, logtime) {
 	var profile_col = PopClick_profile.queryAll("profile")[0]
 	var profile = [profile_col.privatekey, logtime]
@@ -154,10 +160,10 @@ function postFormatting(website, pagepath, page, elementhref, text, selector, cl
 	var interaction = [operation, clicks]
 	var jsonObj = {"profile":profile, "pageobject":pageobject, "interaction":interaction}
 	jsonObj = JSON.stringify(jsonObj);
-	postSendObject(profile_col.token, jsonObj, "add", console.log)
+	postSendObject(profile_col.token, jsonObj, "add","", console.log)
 }
 //Remember to toast if form isn't complete
-function postSendObject(token, selectable, task, callback) {
+function postSendObject(token, selectable, task, tab, callback) {
 
 	var postUrl = "none";
 	if (task === "add") {
@@ -177,7 +183,11 @@ function postSendObject(token, selectable, task, callback) {
         	if (xhr.status == 200) {
                 // If it was a success, close the popup after a short delay
                 // statusDisplay.innerHTML = 'Saved!';
-                callback(xhr.responseText);
+                // callback(xhr.responseText, tab);
+                if (callback){
+                	// callback(xhr.responseText)
+                	callback(xhr.responseText, tab);
+                }
                 // window.setTimeout(window.close, 1000);
             } else {
                 // Show what went wrong

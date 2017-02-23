@@ -20,6 +20,7 @@ function getLogtime() {
 	today = yyyy+'-'+mm+'-'+dd+' '+HH+':'+MM;
 	return today
 }
+//Remove duplicates
 
 // String processing, so that we can slice and insert an item
 String.prototype.splice = function(idx, rem, str) {
