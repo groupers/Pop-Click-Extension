@@ -144,14 +144,18 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 
 function postPageObjects(token, auth, objects, tab) {
 	var jsonObj = JSON.stringify({"profile":auth, "pageobjects":objects});
-	postSendObject(token, jsonObj, "suggestion", tab, console.log)
+	postSendObject(token, jsonObj, "suggestion", tab, feedback)
 }
 
 function feedback(content_feedback, tab) {
 	var numbers = JSON.parse(content_feedback)["recommendation"].replace(/(\]|\[)/g,'').split(',').map(Number);
-	console.log(numbers)
+	console.log(content_feedback)
+	if (isNaN(numbers[0])){
+		numbers = -1;
+	}
 	chrome.tabs.sendMessage(tab, {action: "feedback_info", numbers: numbers}, function(response) {
 	});
+
 }
 function postFormatting(website, pagepath, page, elementhref, text, selector, clicks, operation, logtime) {
 	var profile_col = PopClick_profile.queryAll("profile")[0]

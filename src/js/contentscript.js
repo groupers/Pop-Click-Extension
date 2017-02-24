@@ -3,14 +3,12 @@
 var suggestedElements;
 //Adding extra properties
 var btnabox = 10;
-console.log("Distance")
-console.log(levenshtein_distance_a("hubrle","hubble"))
 //Not necessary
 var array = new Array();
 array[0] = document.location.href;
 var stringifiedArray = JSON.stringify(array);
 var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
-
+var feedback_info_timestamp = null, feedback_info_link = null;
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
@@ -18,7 +16,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 		generateDialogContent(msg.url);
 	}
 
-	if(msg.action = 'sendpage_info') {
+	if(msg.action == 'sendpage_info') {
 		var objects = []
 		for (i = 0 ; i < document.getElementsByTagName('a').length && i < 500; i++) {
 			var curr = document.getElementsByTagName('a')[i]
@@ -29,12 +27,43 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 			arr.push(getPath(curr))
 			objects.push(arr)
 		}
-
 		sendResponse({objects: objects});
 	}
-	if(msg.action = 'feedback_info' && msg.numbers) {
-		for(i=0; i<msg.numbers.length; i++){
-			console.log(document.getElementsByTagName('a')[msg.numbers[i]].text)
+	if(msg.action == 'feedback_info') {
+		var toastall = false;
+		if(feedback_info_timestamp === null) {
+			toastall = true;
+			feedback_info_timestamp = new Date();
+			feedback_info_link = document.location.href;
+		} else if((new Date() - feedback_info_timestamp)/ 1000.0 > 2.0){
+			feedback_info_timestamp = new Date();
+			feedback_info_link = document.location.href;
+			toastall = true;
+		}
+		if(toastall == true){
+			var timeout = 7000;
+			if (msg.numbers != -1) {
+				for(i=0; i<msg.numbers.length && i<5; i++){
+					var elem = document.getElementsByTagName('a')[msg.numbers[i]]
+					// Have to fix the fact of being sent back a random list with an item 0
+					if(elem.text.replace(/\s/g,' ').length != 0){
+						var message = elem.text;
+						if (message.length > 15){
+							message = message.substring(0,15)+"...";
+						}
+						if(i<2){
+							timeout = 100000;
+						}else{
+							timeout = 10000;
+						}
+						iziToast.show({
+							title: '['+i+']',
+							message: message,
+							timeout: timeout
+						});
+					}
+				}
+			}
 		}
 	}
 });
@@ -43,7 +72,6 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5, script = 7, link = 8;
 // Generate DOM element <p>
 function e(elementShort, text, href, ID, classname, order, kind) {
-	// console.log(text);
 	var returnvalue = "";
 	text = text.trim();
 	if (text.length == 0 || typeof text === 'undefined') return ;
@@ -109,53 +137,53 @@ function generateDialogContent(url) {
 		stringifiedArray = JSON.stringify(array);
 	}
 	chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
-		console.log('message sent');
 		highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
 		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
 		var dialogbuttons = document.getElementById("ButtonCollection");
-		while (dialogbuttons.firstChild) {
-			dialogbuttons.removeChild(dialogbuttons.firstChild);
-		}
-		var randomListOfAnchors = []
-
-		for (i = 0 ; i < document.getElementsByTagName('a').length; i++) {
-			if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])) {
-				randomListOfAnchors.push(i);
+		if(dialogbuttons != null && dialogbuttons.firstChild != null){
+			while (dialogbuttons.firstChild) {
+				dialogbuttons.removeChild(dialogbuttons.firstChild);
 			}
+			var randomListOfAnchors = []
+
+			for (i = 0 ; i < document.getElementsByTagName('a').length; i++) {
+				if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])) {
+					randomListOfAnchors.push(i);
+				}
+			}
+			randomListOfAnchors[randomListOfAnchorsIterator]
+			var randomListOfAnchorsIterator = 0;
+			var dialog_elements = {}
+			for (i = 0; i < 10; i++){
+				var text, href;
+				if(highest_clicks_text[i] != undefined) {
+					text = highest_clicks_text[i];
+					href = highest_clicks_href[i];
+					var anchor = e(a, text, href, "", "btnabox", i, "pers");
+				} 
+				else {
+					var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
+					if(document.getElementsByTagName('a')[currentIndex]){
+						text = document.getElementsByTagName('a')[currentIndex].text;
+						href = document.getElementsByTagName('a')[currentIndex].href;
+						var anchor = e(a, text, href, "", "btnabox", i);
+					}
+					randomListOfAnchorsIterator++;
+				}
+				if(dialog_elements[text] != href){
+					dialog_elements[text]= href;
+					dialogbuttons.innerHTML += anchor;
+				}
+			}
+			for(i = 0 ; i < document.getElementsByClassName('btnabox').length; i++) {
+				var currentElement =document.getElementsByClassName('btnabox')[i];
+				if(currentElement.getAttribute('kind') === 'pers') {
+					currentElement.style.backgroundColor = "rgb(76, 175, 80)";
+				}
+			}		  
 		}
-		randomListOfAnchors[randomListOfAnchorsIterator]
-		console.log(randomListOfAnchors)
-		var randomListOfAnchorsIterator = 0;
-		var dialog_elements = {}
-		for (i = 0; i < 10; i++){
-			var text, href;
-			if(highest_clicks_text[i] != undefined) {
-				text = highest_clicks_text[i];
-				href = highest_clicks_href[i];
-				var anchor = e(a, text, href, "", "btnabox", i, "pers");
-			} 
-			else {
-				var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
-			  		// console.log(currentIndex)
-			  		if(document.getElementsByTagName('a')[currentIndex]){
-			  			text = document.getElementsByTagName('a')[currentIndex].text;
-			  			href = document.getElementsByTagName('a')[currentIndex].href;
-			  			var anchor = e(a, text, href, "", "btnabox", i);
-			  		}
-			  		randomListOfAnchorsIterator++;
-			  	}
-			  	if(dialog_elements[text] != href){
-			  		dialog_elements[text]= href;
-			  		dialogbuttons.innerHTML += anchor;
-			  	}
-			  }
-			  for(i = 0 ; i < document.getElementsByClassName('btnabox').length; i++) {
-			  	var currentElement =document.getElementsByClassName('btnabox')[i];
-			  	if(currentElement.getAttribute('kind') === 'pers') {
-			  		currentElement.style.backgroundColor = "rgb(76, 175, 80)";
-			  	}
-			  }		  
-			});
+
+	});
 }
 
 
@@ -164,7 +192,6 @@ for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName
 	str.push(document.getElementsByTagName('a')[i]);
 }
 str.sort();
-console.log("\n after");
 var pointer = 1;
 if(str.length >= 2) {
 	for (i=0; i < str.length; i++) {
@@ -203,7 +230,7 @@ for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
 		mapOfElements.set(currentElement,currentAnchor.href);
 	}
 }
-console.log(mapOfElements)
+
 // If no text nor title find end half of the url :
 // /something/ or /something
 // #something
@@ -240,7 +267,6 @@ new Awesomplete(input, {
 generateDialogContent();
 
 // toastr.info('Are you the 6 fingered man?')
-toastr["info"]("ThisIsALink", "Press [1]").css("width","150px").css('height','80px')
 var dialogBoxVisible = false;
 // Observer for when the div element has it's class attribute altered
 /** Observing the visibility of the dialog box **/
