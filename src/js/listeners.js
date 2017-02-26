@@ -22,6 +22,14 @@ addEvent(document, "keypress", function(e) {
 			document.location = redirectPath;
 		}
 	}
+	if(+e.keyCode > 47 && +e.keyCode < 58) {
+		//Add if shortcut click option is activated
+		if(Object.keys(iziToasts).length > 0){
+			if(typeof iziToasts['['+(e.keyCode-48)+']'] !== 'undefined'){
+				document.location = iziToasts['['+(e.keyCode-48)+']'];
+			}
+		}
+	}
 });
 
 
@@ -85,15 +93,35 @@ if (document.addEventListener) {
 				array[4] = document.location.hostname;
 				array[5] = document.location.pathname;
 				var stringifiedArray = JSON.stringify(array);
-				chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
-					if(b && b.backgroundMsg){
-						console.log(b.backgroundMsg);
-					}
-					console.log('Callback object just above');
-				});
+				//Have to make sure it matches run time : Test if link clicked in fb message.
+				if(stringifiedArray != null){
+					chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
+						if(b && b.backgroundMsg){
+							console.log(b.backgroundMsg);
+						}
+						console.log('Callback object just above');
+					});
+				}
+			}
+			var iziToaster = false;
+			if(targetElement.className == 'iziToast-body'){
+				iziToaster = true;
+			}
+			else if(targetElement.className == 'slideIn'){
+				targetElement = targetElement.parentNode
+				iziToaster = true;
+			}
+			else if(targetElement.classList[0] == 'iziToast'){
+				targetElement = targetElement.childNodes[2]
+				iziToaster = true;
+			}
+			if(iziToaster == true){
+				if(/\[[0-9]\]/.test(targetElement.firstChild.innerHTML)){
+					window.location = iziToasts[targetElement.firstChild.innerHTML];
+				}
+			}
 		}
-	}
-});
+	});
 } else if (document.attachEvent) {    
 	document.attachEvent("onclick", function() {
 		var targetElement = event.target || event.srcElement;

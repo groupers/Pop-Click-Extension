@@ -9,6 +9,7 @@ array[0] = document.location.href;
 var stringifiedArray = JSON.stringify(array);
 var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
 var feedback_info_timestamp = null, feedback_info_link = null;
+var iziToasts = new Map();
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
@@ -42,7 +43,8 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 		}
 		if(toastall == true){
 			var timeout = 7000;
-			if (msg.numbers != -1) {
+			if (msg.numbers != -1 && document.getElementsByClassName('iziToast-body').length == 0) {
+
 				for(i=0; i<msg.numbers.length && i<5; i++){
 					var elem = document.getElementsByTagName('a')[msg.numbers[i]]
 					// Have to fix the fact of being sent back a random list with an item 0
@@ -56,11 +58,31 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 						}else{
 							timeout = 10000;
 						}
-						iziToast.show({
-							title: '['+i+']',
-							message: message,
-							timeout: timeout
-						});
+						// console.log("item "+toasts['['+i+']'])
+							iziToast.show({
+								title: '['+i+']',
+								message: message,
+								timeout: timeout,
+								onOpen: function(instance, toast){
+									// console.info('callback abriu!'+i);
+									iziToasts['['+i+']'] = elem.href
+									console.log(instance)
+									// instance.addEventListener("click", function(event) {
+									// 	console.log('check')
+									// });
+									// instance.
+								},
+								onClose: function(instance, toast, closedBy){
+						        console.info('closedBy: ' + closedBy); // tells if it was closed by 'drag' or 'button'
+						        // console.info(instance['title']+" "+instance['message']);
+						        console.log("item removed"+instance['title'])
+						        delete iziToasts[instance['title']]
+
+						        // console.log('checking removed'+toasts[instance['title']])
+						    	}
+							});
+					
+						// console.log(iziToast)
 					}
 				}
 			}
@@ -264,6 +286,9 @@ new Awesomplete(input, {
 		return ((text.toLowerCase()).includes(input.toLowerCase()));
 	}
 });
+// document.addEventListener('iziToast-open', function(instance, data){
+
+// });
 generateDialogContent();
 
 // toastr.info('Are you the 6 fingered man?')
