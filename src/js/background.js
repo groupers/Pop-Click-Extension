@@ -3,6 +3,7 @@
 
 var PopClick_profile = new localStorageDB("Profile", chrome.storage.local);
 var PopClick_local_clickables = new localStorageDB("ClickTable", chrome.storage.local);
+// var PopClick_settings = new localStorageDB("PageSetting", chrome.storage.local);
 
 if(PopClick_profile.isNew()) {
 	PopClick_profile.createTable("profile", ["token", "privatekey", "logtime"]);
@@ -12,6 +13,8 @@ if(PopClick_local_clickables.isNew()) {
 	PopClick_local_clickables.createTable("pageselectable", ["pagehref", "elementhref", "text", "selector", "clicks"]);
 	PopClick_local_clickables.commit();
 }
+
+// if(Pop)
 
 var myURL = "about:blank"; // A default url just in case below code doesn't work
 var sentShort_term = {}
@@ -33,6 +36,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdate
 	});
 });
 
+chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+ if (msg && msg.memo){
+ 	console.log(msg.memo)
+ }
+})
 /** Handles profile **/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	var current_time = getLogtime();
@@ -148,6 +156,7 @@ function postPageObjects(token, auth, objects, tab) {
 }
 
 function feedback(content_feedback, tab) {
+	console.log(content_feedback)
 	var numbers = JSON.parse(content_feedback)["recommendation"].replace(/(\]|\[)/g,'').split(',').map(Number);
 	console.log(content_feedback)
 	if (isNaN(numbers[0])){

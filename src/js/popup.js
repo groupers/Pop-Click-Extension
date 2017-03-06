@@ -10,7 +10,7 @@ $(document).ready(function() {
 	$('#sparkles').hide();
 	$('.chips-initial').material_chip({
 		data: [{
-			tag: 'New & Media',
+			tag: 'News & Media',
 		}, {
 			tag: 'Fashion',
 		}, {
@@ -40,8 +40,8 @@ $(document).ready(function() {
 		}, {
 			tag: 'Movies & Theatre',
 		}, {
-			tag: '+1' 
-		}],
+			tag: 'Craft',
+		}]
 	});
 	Array.from(chips).forEach(function(element) {
 		element.value = 0;
@@ -154,19 +154,30 @@ function displayElement(obj) {
 	}
 }
 
-function initialResponse(str){
+function initialResponse(str) {
 	var profile = new Array();
 	profile[0] = JSON.parse(str).profile
-	var stringifiedProfile = JSON.stringify(profile)
-	chrome.runtime.sendMessage({createprofile: stringifiedProfile}, function(response) {
-		fetchFileContent('http://localhost:8000/popclick/api/get/'+profile[0], logging)
-	});
+	if(JSON.parse(str).hasOwnProperty('profile')) {
+		var stringifiedProfile = JSON.stringify(profile)
+		chrome.runtime.sendMessage({createprofile: stringifiedProfile}, function(response) {
+			fetchFileContent('http://localhost:8000/popclick/api/get/'+profile[0], logging)
+		});
+		// If we receive a 200 response from logging
+	} else {
+		handleError(profile[0])
+		// Popup error at the right place redirect the user to the page with the error (page 1 or 2)
+	}
+}
+
+function handleError(error){
+
 }
 
 function logging(tes) {
 	tes = JSON.parse(tes);
 	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
-		console.log('auth on board')
+		console.log('auth on board') 
+		// <-- Check response here if 200 Save page state
 	});
 }
 
@@ -203,6 +214,7 @@ function postAccountCreation(logtime, age, interests, gender, signed, callback){
                 // If it was a success, close the popup after a short delay
                 // statusDisplay.innerHTML = 'Saved!';
                 callback(xhr.responseText);
+                console.log(xhr.responseText)
                 // window.setTimeout(window.close, 1000);
             } else {
                 // Show what went wrong

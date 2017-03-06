@@ -25,7 +25,7 @@ addEvent(document, "keypress", function(e) {
 	if(+e.keyCode > 47 && +e.keyCode < 58) {
 		//Add if shortcut click option is activated
 		if(Object.keys(iziToasts).length > 0){
-			if(typeof iziToasts['['+(e.keyCode-48)+']'] !== 'undefined'){
+			if(typeof iziToasts['['+(e.keyCode-48)+']'] !== 'undefined' && e.ctrlKey && e.altKey){
 				document.location = iziToasts['['+(e.keyCode-48)+']'];
 			}
 		}
@@ -81,9 +81,12 @@ if (document.addEventListener) {
 				// Have to add a condition for when there is no title nor text.
 				// Order : 1.Text, 2.title, 3.child alt, 4. URL compare, 5. tag
 				// Give option to modify name
-				array[2] = targetElement.text.trim() || "not-found"
+				chrome.runtime.sendMessage({memo: ''+targetElement.innerText.trim()+''}, function(b) {});
+				// }
+				array[2] = targetElement.innerText.trim()|| targetElement.title || "not-found"
 				if(targetElement.className != 'btnabox') {
-					array[3] = getPath(targetElement);
+					// array[3] = getPath(targetElement);
+					array[3] = "something"
 				} else {
 					array[2] = array[2].replace(/\s\[\d*\]$/,"")
 

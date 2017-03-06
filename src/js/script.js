@@ -77,7 +77,8 @@ var doubleShift = false;
 function KeyPress(e) {
 	var input = document.getElementById('AwesompleteInputfield');
       var evtobj = window.event? event : e
-      if (evtobj.keyCode == 80 && evtobj.ctrlKey) {
+      //TODO Allow different evtobj.altKey or ctrl etc in menu switch..
+      if (evtobj.keyCode == 80 && evtobj.altKey) {
       	document.getElementById('TheDialogBox').style.display = (dialogBoxVisible ) ?  'none' : '';
       	dialogBoxVisible = !dialogBoxVisible;
       }

@@ -13,7 +13,6 @@ var iziToasts = new Map();
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
-
 		generateDialogContent(msg.url);
 	}
 
@@ -26,12 +25,15 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 			arr.push(curr.href)
 			arr.push(curr.text)
 			arr.push(getPath(curr))
-			objects.push(arr)
+			if (curr.className !== 'btnabox') {
+				objects.push(arr)
+			}
 		}
 		sendResponse({objects: objects});
 	}
 	if(msg.action == 'feedback_info') {
 		var toastall = false;
+		// Add option if toasts should be visible
 		if(feedback_info_timestamp === null) {
 			toastall = true;
 			feedback_info_timestamp = new Date();
@@ -58,31 +60,22 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 						}else{
 							timeout = 10000;
 						}
-						// console.log("item "+toasts['['+i+']'])
-							iziToast.show({
-								title: '['+i+']',
-								message: message,
-								timeout: timeout,
-								onOpen: function(instance, toast){
-									// console.info('callback abriu!'+i);
+						iziToast.show({
+							title: '['+i+']',
+							message: message,
+							timeout: timeout,
+							onOpen: function(instance, toast){
 									iziToasts['['+i+']'] = elem.href
 									console.log(instance)
-									// instance.addEventListener("click", function(event) {
-									// 	console.log('check')
-									// });
-									// instance.
 								},
 								onClose: function(instance, toast, closedBy){
 						        console.info('closedBy: ' + closedBy); // tells if it was closed by 'drag' or 'button'
-						        // console.info(instance['title']+" "+instance['message']);
+
 						        console.log("item removed"+instance['title'])
 						        delete iziToasts[instance['title']]
+						    }
+						});
 
-						        // console.log('checking removed'+toasts[instance['title']])
-						    	}
-							});
-					
-						// console.log(iziToast)
 					}
 				}
 			}
@@ -217,7 +210,7 @@ str.sort();
 var pointer = 1;
 if(str.length >= 2) {
 	for (i=0; i < str.length; i++) {
-		if(/javascript(\(.*\)|:)|.*\/\#$/.test(str[i].href)) {
+		if(/(javascript\(.*\)|.*\/\#)$/.test(str[i].href)) {
 			str.remove(i);
 			i--;
 		}
@@ -247,7 +240,7 @@ var mapOfElements = new Map();
 for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
 	var currentAnchor = document.getElementsByTagName('a')[i];
 	var currentElement = (currentAnchor.text).replace(/\s/g,' ');
-	if (!/javascript(\(.*\)|:)|.*\/\#$/.test(currentAnchor.href)) {
+	if (!/(javascript\(.*\)|.*\/\#)$/.test(currentAnchor.href) || currentAnchor.className != 'btnabox') {
 		listofnameElements.push(currentElement);
 		mapOfElements.set(currentElement,currentAnchor.href);
 	}
@@ -286,12 +279,9 @@ new Awesomplete(input, {
 		return ((text.toLowerCase()).includes(input.toLowerCase()));
 	}
 });
-// document.addEventListener('iziToast-open', function(instance, data){
 
-// });
 generateDialogContent();
 
-// toastr.info('Are you the 6 fingered man?')
 var dialogBoxVisible = false;
 // Observer for when the div element has it's class attribute altered
 /** Observing the visibility of the dialog box **/
