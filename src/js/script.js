@@ -100,7 +100,7 @@ function KeyPress(e) {
       if(evtobj.keyCode == 27 && dialogBoxVisible) {
       	closingBtnCollector();
       }
-      if(fortyEightPlusTen.includes(evtobj.keyCode) && dialogBoxVisible && btnaboxElements) {
+      if(fortyEightPlusTen.includes(evtobj.keyCode) && dialogBoxVisible && btnaboxElements && input != document.activeElement) {
       	document.getElementById("DialogBoxAnchor"+(evtobj.keyCode-48)).click();
       } 
 

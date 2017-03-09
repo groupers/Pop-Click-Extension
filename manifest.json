@@ -18,7 +18,8 @@
         "src/js/3rdparty/jquery-3.1.1.min.js",
         "src/js/3rdparty/iziToast.min.js",
         "src/js/3rdparty/awesomplete.min.js",
-        "src/js/contentscript.js"
+        "src/js/contentscript.js",
+        "src/js/render.js"
       ],
       "css" : [
         "src/css/awesomplete.css",

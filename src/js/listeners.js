@@ -2,6 +2,7 @@
 //Order of the words, order of the letters, words in common, letters in common.
 
 // Key press listener on enter key
+window.localStorage['location'] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
 addEvent(document, "keypress", function(e) {
 	e = e || window.event;
 	if(e.keyCode == "13") {
@@ -22,10 +23,10 @@ addEvent(document, "keypress", function(e) {
 			document.location = redirectPath;
 		}
 	}
-	if(+e.keyCode > 47 && +e.keyCode < 58) {
+	if(+e.keyCode > 47 && +e.keyCode < 58 && +e.ctrlKey) {
 		//Add if shortcut click option is activated
 		if(Object.keys(iziToasts).length > 0){
-			if(typeof iziToasts['['+(e.keyCode-48)+']'] !== 'undefined' && e.ctrlKey && e.altKey){
+			if(typeof iziToasts['['+(e.keyCode-48)+']'] !== 'undefined'){
 				document.location = iziToasts['['+(e.keyCode-48)+']'];
 			}
 		}
@@ -56,7 +57,8 @@ if (document.addEventListener) {
 	document.addEventListener("click", function(event) {
 		var targetElement = event.target || event.srcElement;
 		var array = new Array();
-		array[0] = document.location.href;
+		if(JSON.parse(window.localStorage['location']) != undefined){
+		array[0] = JSON.parse(window.localStorage['location'])[2]
 		var parentElementA = undefined, currentElement = targetElement;
 		if(targetElement.className != 'closingCollector'){
 			if(targetElement.nodeName != 'A' && targetElement.className != 'btnabox') {
@@ -83,7 +85,7 @@ if (document.addEventListener) {
 				// Give option to modify name
 				chrome.runtime.sendMessage({memo: ''+targetElement.innerText.trim()+''}, function(b) {});
 				// }
-				array[2] = targetElement.innerText.trim()|| targetElement.title || "not-found"
+				array[2] = targetElement.innerText.trim()|| "not-found"
 				if(targetElement.className != 'btnabox') {
 					// array[3] = getPath(targetElement);
 					array[3] = "something"
@@ -93,8 +95,8 @@ if (document.addEventListener) {
 					// Get object selector with same page,href
 					array[3] = 'btnabox-element';
 				}
-				array[4] = document.location.hostname;
-				array[5] = document.location.pathname;
+				array[4] = JSON.parse(window.localStorage['location'])[0]
+				array[5] = JSON.parse(window.localStorage['location'])[1]
 				var stringifiedArray = JSON.stringify(array);
 				//Have to make sure it matches run time : Test if link clicked in fb message.
 				if(stringifiedArray != null){
@@ -124,6 +126,7 @@ if (document.addEventListener) {
 				}
 			}
 		}
+	}
 	});
 } else if (document.attachEvent) {    
 	document.attachEvent("onclick", function() {

@@ -14,6 +14,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
 		generateDialogContent(msg.url);
+		window.localStorage['location'] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
 	}
 
 	if(msg.action == 'sendpage_info') {
@@ -21,9 +22,9 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 		for (i = 0 ; i < document.getElementsByTagName('a').length && i < 500; i++) {
 			var curr = document.getElementsByTagName('a')[i]
 			var arr = []
-			arr.push(curr.baseURI)
+			arr.push(document.location.href)
 			arr.push(curr.href)
-			arr.push(curr.text)
+			arr.push(curr.innerText.trim())
 			arr.push(getPath(curr))
 			if (curr.className !== 'btnabox') {
 				objects.push(arr)
@@ -50,8 +51,8 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 				for(i=0; i<msg.numbers.length && i<5; i++){
 					var elem = document.getElementsByTagName('a')[msg.numbers[i]]
 					// Have to fix the fact of being sent back a random list with an item 0
-					if(elem.text.replace(/\s/g,' ').length != 0){
-						var message = elem.text;
+					if(elem.innerText.replace(/\s/g,' ').length != 0){
+						var message = elem.innerText.trim();
 						if (message.length > 15){
 							message = message.substring(0,15)+"...";
 						}
@@ -179,7 +180,7 @@ function generateDialogContent(url) {
 				else {
 					var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
 					if(document.getElementsByTagName('a')[currentIndex]){
-						text = document.getElementsByTagName('a')[currentIndex].text;
+						text = document.getElementsByTagName('a')[currentIndex].innerText.trim();
 						href = document.getElementsByTagName('a')[currentIndex].href;
 						var anchor = e(a, text, href, "", "btnabox", i);
 					}

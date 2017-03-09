@@ -14,8 +14,6 @@ if(PopClick_local_clickables.isNew()) {
 	PopClick_local_clickables.commit();
 }
 
-// if(Pop)
-
 var myURL = "about:blank"; // A default url just in case below code doesn't work
 var sentShort_term = {}
 
