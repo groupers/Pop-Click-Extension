@@ -76,7 +76,7 @@ if (btnaboxElements) {
 var doubleShift = false;
 function KeyPress(e) {
 	var input = document.getElementById('AwesompleteInputfield');
-      var evtobj = window.event? event : e
+  var evtobj = window.event? event : e
       //TODO Allow different evtobj.altKey or ctrl etc in menu switch..
       if (evtobj.keyCode == 80 && evtobj.altKey) {
       	document.getElementById('TheDialogBox').style.display = (dialogBoxVisible ) ?  'none' : '';
@@ -87,15 +87,15 @@ function KeyPress(e) {
       		input.focus();
       		input.select();
       	}
-	    if(doubleShift){     
-      		closingBtnCollector();
-	        doubleShift = false;
-	    } else {
-	     doubleShift = true;
-	    }
-      }else if(dialogBoxVisible ){
-      	doubleShift = false;
+       if(doubleShift){     
+        closingBtnCollector();
+        doubleShift = false;
+      } else {
+        doubleShift = true;
       }
+    }else if(dialogBoxVisible ){
+     doubleShift = false;
+   }
       //Escape key
       if(evtobj.keyCode == 27 && dialogBoxVisible) {
       	closingBtnCollector();
@@ -104,6 +104,6 @@ function KeyPress(e) {
       	document.getElementById("DialogBoxAnchor"+(evtobj.keyCode-48)).click();
       } 
 
-}		
+    }		
 
-document.onkeydown = KeyPress;
+    document.onkeydown = KeyPress;
