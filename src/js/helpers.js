@@ -20,8 +20,16 @@ function getLogtime() {
 	today = yyyy+'-'+mm+'-'+dd+' '+HH+':'+MM;
 	return today
 }
-//Remove duplicates
-
+// Adds EventListener By Stackoverflow, collaboration
+function addEvent(element, event, callback) {
+	if (element.addEventListener) {
+		element.addEventListener(event, callback, false);
+	} else if (element.attachEvent) {
+		element.attachEvent("on" + event, callback);
+	} else {
+		element["on" + event] = callback;
+	}
+}
 // String processing, so that we can slice and insert an item
 String.prototype.splice = function(idx, rem, str) {
 	return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));

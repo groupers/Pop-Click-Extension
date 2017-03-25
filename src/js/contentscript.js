@@ -1,15 +1,24 @@
 
 /** Using content script as a front end processing tier **/
+// You have to update variable names
 var suggestedElements;
+var str = [], string = "", inListElements = 1;
+var listofnameElements = [];
+var mapOfElements = new Map();
+
 //Adding extra properties
 var btnabox = 10;
 //Not necessary
 var array = new Array();
 array[0] = document.location.href;
 var stringifiedArray = JSON.stringify(array);
+var div = document.createElement("div"); 
 var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
 var feedback_info_timestamp = null, feedback_info_link = null;
 var iziToasts = new Map();
+var sentObjects = new Map();
+console.log("---- --- -- - ----")
+console.log(pre_lev('they should make a pixar movie about that little lamp','kould'));
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
@@ -18,7 +27,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 
 	if(msg.action == 'sendpage_info') {
-		var objects = []
+		var objects = [];
 		for (i = 0 ; i < document.getElementsByTagName('a').length && i < 500; i++) {
 			var curr = document.getElementsByTagName('a')[i]
 			var arr = []
@@ -30,43 +39,43 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 				objects.push(arr)
 			}
 		}
+		sentObjects[document.location.href] = objects;
 		sendResponse({objects: objects});
 	}
 	if(msg.action == 'feedback_info') {
 		var toastall = false;
 		// Add option if toasts should be visible
-		if(feedback_info_timestamp === null) {
-			toastall = true;
-			feedback_info_timestamp = new Date();
-			feedback_info_link = document.location.href;
-		} else if((new Date() - feedback_info_timestamp)/ 1000.0 > 2.0){
+		if(feedback_info_timestamp === null || (new Date() - feedback_info_timestamp)/ 1000.0 > 2.0){
 			feedback_info_timestamp = new Date();
 			feedback_info_link = document.location.href;
 			toastall = true;
 		}
 		if(toastall == true){
-			var timeout = 7000;
-			if (msg.numbers != -1 && document.getElementsByClassName('iziToast-body').length == 0) {
-
-				for(i=0; i<msg.numbers.length && i<5; i++){
-					var elem = document.getElementsByTagName('a')[msg.numbers[i]]
-					// Have to fix the fact of being sent back a random list with an item 0
-					if(elem.innerText.replace(/\s/g,' ').length != 0){
-						var message = elem.innerText.trim();
-						if (message.length > 15){
-							message = message.substring(0,15)+"...";
-						}
-						if(i<2){
-							timeout = 100000;
-						}else{
-							timeout = 10000;
-						}
-						iziToast.show({
-							title: '['+i+']',
-							message: message,
-							timeout: timeout,
-							onOpen: function(instance, toast){
-									iziToasts['['+i+']'] = elem.href
+			var timeout = 7000, changed = false;
+			if (msg.numbers != -1 && sentObjects[document.location.href].length >0) {
+				if(msg.update && document.getElementsByClassName('iziToast-body').length > 0){
+					iziToast.destroy();
+				}
+				if(document.getElementsByClassName('iziToast-body').length == 0 || changed == true){
+					for(i=0; i<msg.numbers.length && i<5; i++){
+						var elem = sentObjects[document.location.href][msg.numbers[i]]
+						// Have to fix the fact of being sent back a random list with an item 0
+						if(typeof elem != 'undefined' && elem[2].replace(/\s/g,' ').length != 0){
+							var message = elem[2].trim();
+							if (message.length > 15){
+								message = message.substring(0,15)+"...";
+							}
+							if(i<2){
+								timeout = 100000;
+							}else{
+								timeout = 10000;
+							}
+							iziToast.show({
+								title: '['+i+']',
+								message: message,
+								timeout: timeout,
+								onOpen: function(instance, toast){
+									iziToasts['['+i+']'] = elem[1]
 									console.log(instance)
 								},
 								onClose: function(instance, toast, closedBy){
@@ -77,6 +86,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 						    }
 						});
 
+						}
 					}
 				}
 			}
@@ -202,101 +212,98 @@ function generateDialogContent(url) {
 	});
 }
 
+function main(){
 
-var str = [];
-for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++) {
-	str.push(document.getElementsByTagName('a')[i]);
-}
-str.sort();
-var pointer = 1;
-if(str.length >= 2) {
+	for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++) {
+		str.push(document.getElementsByTagName('a')[i]);
+	}
+	str.sort();
+	var pointer = 1;
+	if(str.length >= 2) {
+		for (i=0; i < str.length; i++) {
+			if(/(javascript\(.*\)|.*\/\#)$/.test(str[i].href)) {
+				str.remove(i);
+				i--;
+			}
+		}
+	}
 	for (i=0; i < str.length; i++) {
-		if(/(javascript\(.*\)|.*\/\#)$/.test(str[i].href)) {
-			str.remove(i);
-			i--;
+		var text = "";
+		if(str[i].text.length == 0 && str[i].title != "") {
+			text = str[i].title;
+		} else {
+			text = str[i].text;
+		}
+		var currentElement = e(a, text, str[i].href, "", "btnabox", inListElements);
+		// Verifies if the element exists, in case some how in the handling something went wrong.
+		//Problem when the anchor tag starts with # for some reason.
+		//Example: https://developer.chrome.com/extensions/content_scripts#pi
+		if(currentElement || currentElement != "") {
+			string += currentElement;
+			++inListElements;
 		}
 	}
-}
-var string = "", inListElements = 1;
-
-for (i=0; i < str.length; i++) {
-	var text = "";
-	if(str[i].text.length == 0 && str[i].title != "") {
-		text = str[i].title;
-	} else {
-		text = str[i].text;
-	}
-	var currentElement = e(a, text, str[i].href, "", "btnabox", inListElements);
-	// Verifies if the element exists, in case some how in the handling something went wrong.
-	//Problem when the anchor tag starts with # for some reason.
-	//Example: https://developer.chrome.com/extensions/content_scripts#pi
-	if(currentElement || currentElement != "") {
-		string += currentElement;
-		++inListElements;
-	}
-}
-
-var listofnameElements = [];
-var mapOfElements = new Map();
-for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
-	var currentAnchor = document.getElementsByTagName('a')[i];
-	var currentElement = (currentAnchor.text).replace(/\s/g,' ');
-	if (!/(javascript\(.*\)|.*\/\#)$/.test(currentAnchor.href) || currentAnchor.className != 'btnabox') {
-		listofnameElements.push(currentElement);
-		mapOfElements.set(currentElement,currentAnchor.href);
-	}
-}
-
-// If no text nor title find end half of the url :
-// /something/ or /something
-// #something
-
-// Backend processing on python
-// When multiple text or href seem to have similar substrings remove uncommons
-// If url contains mean URI followed by /# Remove from list :=> Put it in the list of unwanted
-var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :"/>';
-var dim_div = document.createElement("div");
-document.body.appendChild(dim_div);
-dim_div.id = "pagecover"
-var div = document.createElement("div"); 
-document.body.appendChild(div); 
-div.id = "TheDialogBox"
-div.innerHTML = e(d, e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
-div.innerHTML += e(d, string, "default", "ButtonCollection", "btncollector");
-div.innerHTML += e(d,inputfield,"DialogBoxFoot","dialogBoxFoot");
-div.style.position = "float";
-div.style.left = "50px";
-div.style.display = "none";
-var input = document.getElementById("AwesompleteInputfield");
-function sorting(text, input) {
-	return true;
-}
-new Awesomplete(input, {
-	list: listofnameElements,
-	filter: function (text, input) {
-		if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 && ( levenshtein_distance_a(text.toLowerCase(),input.toLowerCase())>0 && levenshtein_distance_a(text.toLowerCase(),input.toLowerCase()) < 3) && input.length > 2){
-			input = text
+	for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
+		var currentAnchor = document.getElementsByTagName('a')[i];
+		var currentElement = (currentAnchor.text).replace(/\s/g,' ');
+		if (!/(javascript\(.*\)|.*\/\#)$/.test(currentAnchor.href) || currentAnchor.className != 'btnabox') {
+			listofnameElements.push(currentElement);
+			mapOfElements.set(currentElement,currentAnchor.href);
 		}
-		return ((text.toLowerCase()).includes(input.toLowerCase()));
 	}
-});
-
-generateDialogContent();
-
-var dialogBoxVisible = false;
-// Observer for when the div element has it's class attribute altered
-/** Observing the visibility of the dialog box **/
-var observerDisplay = new MutationObserver(function(mutations) {
-	mutations.forEach(function(mutation) {
-		if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' && mutation.attributeName === 'style') {
-			dialogBoxVisible = !dialogBoxVisible;
+	createDialogBox()
+}
+main()
+	// If no text nor title find end half of the url :
+	// /something/ or /something
+	// #something
+	// Backend processing on python
+	// When multiple text or href seem to have similar substrings remove uncommons
+	// If url contains mean URI followed by /# Remove from list :=> Put it in the list of unwanted
+function createDialogBox(){
+	var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :"/>';
+	var dim_div = document.createElement("div");
+	document.body.appendChild(dim_div);
+	dim_div.id = "pagecover"
+	document.body.appendChild(div); 
+	div.id = "TheDialogBox"
+	div.innerHTML = e(d, e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
+	div.innerHTML += e(d, string, "default", "ButtonCollection", "btncollector");
+	div.innerHTML += e(d,inputfield,"DialogBoxFoot","dialogBoxFoot");
+	div.style.position = "float";
+	div.style.left = "50px";
+	div.style.display = "none";
+	var input = document.getElementById("AwesompleteInputfield");
+	function sorting(text, input) {
+		return true;
+	}
+	new Awesomplete(input, {
+		list: listofnameElements,
+		filter: function (text, input) {
+			if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 && ( pre_lev(text.toLowerCase(),input.toLowerCase())>0 && pre_lev(text.toLowerCase(),input.toLowerCase()) < 3) && input.length > 2){
+				input = text
+			}
+			return ((text.toLowerCase()).includes(input.toLowerCase()));
 		}
 	});
-});
-observerDisplay.observe(div, { attributes: true });
 
+	generateDialogContent();
+
+	var dialogBoxVisible = false;
+	// Observer for when the div element has it's class attribute altered
+	/** Observing the visibility of the dialog box **/
+	var observerDisplay = new MutationObserver(function(mutations) {
+		mutations.forEach(function(mutation) {
+			if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' && mutation.attributeName === 'style') {
+				dialogBoxVisible = !dialogBoxVisible;
+			}
+		});
+	});
+	observerDisplay.observe(div, { attributes: true });
+}
 /* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
-// Injecting script 
+// Injecting script
+
 var s = document.createElement('script');
 s.src = chrome.extension.getURL('src/js/script.js');
 s.onload = function() {

@@ -3,6 +3,7 @@
 
 // Key press listener on enter key
 window.localStorage['location'] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
+
 addEvent(document, "keypress", function(e) {
 	e = e || window.event;
 	if(e.keyCode == "13") {
@@ -23,7 +24,7 @@ addEvent(document, "keypress", function(e) {
 			document.location = redirectPath;
 		}
 	}
-	if(+e.keyCode > 47 && +e.keyCode < 58 && +e.ctrlKey) {
+	if(+e.keyCode > 47 && +e.keyCode < 58 && +e.altKey +e.shiftKey) {
 		//Add if shortcut click option is activated
 		if(Object.keys(iziToasts).length > 0){
 			if(typeof iziToasts['['+(e.keyCode-48)+']'] !== 'undefined'){
@@ -33,58 +34,38 @@ addEvent(document, "keypress", function(e) {
 	}
 });
 
-
-function addEvent(element, event, callback) {
-	if (element.addEventListener) {
-		element.addEventListener(event, callback, false);
-	} else if (element.attachEvent) {
-		element.attachEvent("on" + event, callback);
-	} else {
-		element["on" + event] = callback;
-	}
-}
-function eventFire(el, etype) {
-	if (el.fireEvent) {
-		el.fireEvent('on' + etype);
-	} else {
-		var evObj = document.createEvent('Events');
-		evObj.initEvent(etype, true, false);
-		el.dispatchEvent(evObj);
-	}
-}
-
-if (document.addEventListener) {
-	document.addEventListener("click", function(event) {
+addEvent(document, "click", function(event) {
 		var targetElement = event.target || event.srcElement;
 		var array = new Array();
 		if(JSON.parse(window.localStorage['location']) != undefined){
-		array[0] = JSON.parse(window.localStorage['location'])[2]
-		var parentElementA = undefined, currentElement = targetElement;
-		if(targetElement.className != 'closingCollector'){
-			if(targetElement.nodeName != 'A' && targetElement.className != 'btnabox') {
-				for(i = 0; i < 6; i++){
-					if (currentElement.parentElement == undefined) {
-						break;
-					} else {
-						currentElement = currentElement.parentElement;
-					}
-					if(currentElement.nodeName == 'A') {
-						parentElementA = currentElement;
-						break;
+			array[0] = JSON.parse(window.localStorage['location'])[2]
+			var parentElementA = undefined, currentElement = targetElement;
+			if(targetElement.className != 'closingCollector'){
+				if(targetElement.nodeName != 'A' && targetElement.className != 'btnabox') {
+					for(i = 0; i < 6; i++){
+						if (currentElement.parentElement == undefined) {
+							break;
+						} else {
+							currentElement = currentElement.parentElement;
+						}
+						if(currentElement.nodeName == 'A') {
+							parentElementA = currentElement;
+							break;
+						}
 					}
 				}
-			}
-			if(targetElement.nodeName == 'A' || parentElementA) {
-				if(parentElementA) {
-					targetElement = parentElementA;
-				}
-				array[1] = targetElement.href;
+				if(targetElement.nodeName == 'A' || parentElementA) {
+					if(parentElementA) {
+						targetElement = parentElementA;
+					}
+					array[1] = targetElement.href;
 
 				// Have to add a condition for when there is no title nor text.
 				// Order : 1.Text, 2.title, 3.child alt, 4. URL compare, 5. tag
 				// Give option to modify name
-				chrome.runtime.sendMessage({memo: ''+targetElement.innerText.trim()+''}, function(b) {});
-				// }
+				if(targetElement && targetElement.innerText && targetElement.innerText.trim().length>0){
+					chrome.runtime.sendMessage({memo: ''+targetElement.innerText.trim()+''}, function(b) {});
+				}
 				array[2] = targetElement.innerText.trim()|| "not-found"
 				if(targetElement.className != 'btnabox') {
 					// array[3] = getPath(targetElement);
@@ -127,9 +108,4 @@ if (document.addEventListener) {
 			}
 		}
 	}
-	});
-} else if (document.attachEvent) {    
-	document.attachEvent("onclick", function() {
-		var targetElement = event.target || event.srcElement;
-	});
-}
+});

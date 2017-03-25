@@ -16,7 +16,7 @@ if(PopClick_local_clickables.isNew()) {
 
 var myURL = "about:blank"; // A default url just in case below code doesn't work
 var sentShort_term = {}
-
+var pageTab = {}
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdated should fire when the selected tab is changed or a link is clicked 
 	chrome.tabs.getSelected(null, function(tab) {
 		myURL = tab.url;
@@ -28,16 +28,16 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdate
 				// sentShort_term[tab.url] = (new Date())
 				if(response && response.objects){
 					var profile_col = PopClick_profile.queryAll("profile")[0]
-					postPageObjects(profile_col.token, profile_col.privatekey, response.objects, tabId)
+					postPageObjects(profile_col.token, profile_col.privatekey, response.objects, tabId, myURL)
 				}
 			});
 	});
 });
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
- if (msg && msg.memo){
- 	console.log(msg.memo)
- }
+	if (msg && msg.memo){
+		console.log(msg.memo)
+	}
 })
 /** Handles profile **/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
@@ -148,19 +148,27 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 });
 
-function postPageObjects(token, auth, objects, tab) {
+function postPageObjects(token, auth, objects, tabID, tabURL) {
 	var jsonObj = JSON.stringify({"profile":auth, "pageobjects":objects});
-	postSendObject(token, jsonObj, "suggestion", tab, feedback)
+	postSendObject(token, jsonObj, "suggestion", tabID, tabURL, feedback)
 }
 
-function feedback(content_feedback, tab) {
+function feedback(content_feedback, tabID, tabURL) {
 	console.log(content_feedback)
+	var update = false;
+	if(typeof pageTab[tabID] == 'undefined'){
+		pageTab[tabID] = tabURL
+	} else if(pageTab[tabID] != tabURL){
+			update = true;
+			pageTab[tabID] = tabURL
+	}
+	console.log("bk ::: "+update)
 	var numbers = JSON.parse(content_feedback)["recommendation"].replace(/(\]|\[)/g,'').split(',').map(Number);
 	console.log(content_feedback)
 	if (isNaN(numbers[0])){
 		numbers = -1;
 	}
-	chrome.tabs.sendMessage(tab, {action: "feedback_info", numbers: numbers}, function(response) {
+	chrome.tabs.sendMessage(tabID, {action: "feedback_info", numbers: numbers, update: update}, function(response) {
 	});
 
 }
@@ -171,10 +179,10 @@ function postFormatting(website, pagepath, page, elementhref, text, selector, cl
 	var interaction = [operation, clicks]
 	var jsonObj = {"profile":profile, "pageobject":pageobject, "interaction":interaction}
 	jsonObj = JSON.stringify(jsonObj);
-	postSendObject(profile_col.token, jsonObj, "add","", console.log)
+	postSendObject(profile_col.token, jsonObj, "add","","", console.log)
 }
 //Remember to toast if form isn't complete
-function postSendObject(token, selectable, task, tab, callback) {
+function postSendObject(token, selectable, task, tabID, tabURL, callback) {
 
 	var postUrl = "none";
 	if (task === "add") {
@@ -197,7 +205,7 @@ function postSendObject(token, selectable, task, tab, callback) {
                 // callback(xhr.responseText, tab);
                 if (callback){
                 	// callback(xhr.responseText)
-                	callback(xhr.responseText, tab);
+                	callback(xhr.responseText, tabID, tabURL);
                 }
                 // window.setTimeout(window.close, 1000);
             } else {
