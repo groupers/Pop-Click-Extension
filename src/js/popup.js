@@ -53,7 +53,7 @@ $(document).ready(function() {
 		Array.from(chips).forEach(function(element) {
 			if(chip.tag == element.outerText){
 				element.className = "chip";
-				if ((element.value+1)%2) {
+				if((element.value+1)%2) {
 					if(chips_count < 3){
 						element.value = (element.value+1)%2;
 						chips_count++;
@@ -86,11 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
    var ran_age = document.getElementById('ran_age')
    var in_age = document.getElementById('in_age')
-
+   if (signing.value == undefined){
+   	signing.value = 0;
+   }
    signing.addEventListener('click', function() {
-   	if (signing.value == undefined){
-   		signing.value = 0;
-   	}
    	signing.value = (+(signing.value) + 1)%2
    	if(signing.value){
    		setTimeout(flipInitialState, 500);
@@ -98,10 +97,10 @@ document.addEventListener('DOMContentLoaded', function() {
    }); 
    ran_age.value = 18;
    in_age.value = 18;
-   ran_age.addEventListener('change', function () {
+   ran_age.addEventListener('change', function() {
    	in_age.value = ran_age.value
    })
-   in_age.addEventListener('change', function () {
+   in_age.addEventListener('change', function() {
    	ran_age.value = in_age.value
    })
 });
@@ -155,6 +154,8 @@ function displayElement(obj) {
 }
 
 function initialResponse(str) {
+	// setTimeout($('#preloadcursor').removeClass('active'), 1000)
+
 	var profile = new Array();
 	profile[0] = JSON.parse(str).profile
 	if(JSON.parse(str).hasOwnProperty('profile')) {
@@ -164,19 +165,59 @@ function initialResponse(str) {
 		});
 		// If we receive a 200 response from logging
 	} else {
-		handleError(profile[0])
+		handleError(str)
 		// Popup error at the right place redirect the user to the page with the error (page 1 or 2)
 	}
 }
 
+/**
+Error Handling 
+Form validation
+**/
 function handleError(error){
-
+	// If invalid age, gender, not signed flip to first view
+	// If invalid interests, flip to second view if necessary
+	console.log(JSON.parse(error)['profile_error'])
+	console.log('return value above')
+	var error_call =JSON.parse(error)['profile_error']
+	var errcodesWindow1 = ["INVALID_AGE","INVALID_GENDER","NOT_SIGNED","MISSING_ATTRIBUTE"]
+	if(errcodesWindow1.indexOf(error_call) != -1 && !atInitialPage()){
+		flipInitialState();
+	}
+	if(error_call == "MISSING_ATTRIBUTE"){
+		publishError('Please fill in the form normally')
+	} else if(error_call == "INVALID_AGE"){
+		publishError('You must be older than 3 years old.')
+	} else if(error_call == "INVALID_GENDER"){
+		publishError('Please select one of the displayed genders.')
+	} else if(error_call == "NOT_SIGNED"){
+		publishError('Please sign the contract.')
+	} else if(error_call == "WRONG_DATE_FORMAT"){
+		publishError('There seems to be in issue with your time.')
+	} else if(error_call == "WRONG_INTERESTS"){
+		publishError('Please select the appropriate amount of proposed interests.')
+	} else {
+		// Should be impossible 
+		publishError('Contact support.')
+	}
+	console.log(atInitialPage()+"message")
 }
+function publishError(message){
+	Materialize.toast(message, 2000)
+}
+
+function atInitialPage(){
+	return (+($('#interests').is(":visible")) + 1)%2
+}
+
 
 function logging(tes) {
 	tes = JSON.parse(tes);
 	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
-		console.log('auth on board') 
+		console.log('auth on board')
+		window.location.href= "../view/popup_control.html";
+		chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
+
 		// <-- Check response here if 200 Save page state
 	});
 }
@@ -186,11 +227,12 @@ function fetchFileContent(URL, cb) {
 	xhr.ontimeout = function() {
 		console.error('Please contact support.')
 	};
-
 	xhr.onload = function () {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200) {
 				cb(xhr.response);
+			} else {
+				publishError('There seems to be an issue with your connection to the server.')
 			}
 		}
 	};
@@ -199,8 +241,10 @@ function fetchFileContent(URL, cb) {
 }
 
 //Remember to toast if form isn't complete
-function postAccountCreation(logtime, age, interests, gender, signed, callback){
+function postAccountCreation(logtime, age, interests, gender, signed, callback) {
 	var postUrl = 'http://localhost:8000/popclick/api/create/';
+	$('#preloadcursor').addClass('active');
+	$('#preloadcursor').show();
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
     xhr.open('POST', postUrl, true);
@@ -211,19 +255,11 @@ function postAccountCreation(logtime, age, interests, gender, signed, callback){
         if (xhr.readyState == 4) {
         	// statusDisplay.innerHTML = '';
         	if (xhr.status == 200) {
-                // If it was a success, close the popup after a short delay
-                // statusDisplay.innerHTML = 'Saved!';
-                callback(xhr.responseText);
-                console.log(xhr.responseText)
-                // window.setTimeout(window.close, 1000);
-            } else {
-                // Show what went wrong
-                // statusDisplay.innerHTML = 'Error saving: ' + xhr.statusText;
-            }
+        		$('#preloadcursor').removeClass('active');
+				$('#preloadcursor').hide();
+        		callback(xhr.responseText);
+        	}
         }
     };
-    // };JSON.stringify(initialInterests)
-    xhr.send(JSON.stringify({"logtime":logtime, "age":age, "gender":gender, "interests":interests}));
-    // statusDisplay.innerHTML = 'Saving...';
-
+    xhr.send(JSON.stringify({ "logtime":logtime, "age":age, "gender":gender, "interests":interests, "signed":signed}));
 }

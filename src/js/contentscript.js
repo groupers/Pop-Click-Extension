@@ -17,8 +17,6 @@ var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_hr
 var feedback_info_timestamp = null, feedback_info_link = null;
 var iziToasts = new Map();
 var sentObjects = new Map();
-console.log("---- --- -- - ----")
-console.log(pre_lev('they should make a pixar movie about that little lamp','kould'));
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
@@ -50,14 +48,14 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 			feedback_info_link = document.location.href;
 			toastall = true;
 		}
-		if(toastall == true){
+		if(toastall == true) {
 			var timeout = 7000, changed = false;
 			if (msg.numbers != -1 && sentObjects[document.location.href].length >0) {
 				if(msg.update && document.getElementsByClassName('iziToast-body').length > 0){
 					iziToast.destroy();
 				}
-				if(document.getElementsByClassName('iziToast-body').length == 0 || changed == true){
-					for(i=0; i<msg.numbers.length && i<5; i++){
+				if(document.getElementsByClassName('iziToast-body').length == 0 || changed == true) {
+					for(i=0; i<msg.numbers.length && i<5; i++) {
 						var elem = sentObjects[document.location.href][msg.numbers[i]]
 						// Have to fix the fact of being sent back a random list with an item 0
 						if(typeof elem != 'undefined' && elem[2].replace(/\s/g,' ').length != 0){
@@ -97,7 +95,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 //HTML DOM ELEMENT SHORTS
 var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5, script = 7, link = 8;
 // Generate DOM element <p>
-function e(elementShort, text, href, ID, classname, order, kind) {
+function e(elementShort, text, href, ID, classname, order, kind){
 	var returnvalue = "";
 	text = text.trim();
 	if (text.length == 0 || typeof text === 'undefined') return ;
@@ -280,7 +278,10 @@ function createDialogBox(){
 	new Awesomplete(input, {
 		list: listofnameElements,
 		filter: function (text, input) {
-			if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 && ( pre_lev(text.toLowerCase(),input.toLowerCase())>0 && pre_lev(text.toLowerCase(),input.toLowerCase()) < 3) && input.length > 2){
+			if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 
+				&& ( pre_lev(text.toLowerCase(),input.toLowerCase())>0 
+				&& pre_lev(text.toLowerCase(),input.toLowerCase()) < 3) 
+				&& input.length > 2){
 				input = text
 			}
 			return ((text.toLowerCase()).includes(input.toLowerCase()));
@@ -294,7 +295,8 @@ function createDialogBox(){
 	/** Observing the visibility of the dialog box **/
 	var observerDisplay = new MutationObserver(function(mutations) {
 		mutations.forEach(function(mutation) {
-			if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' && mutation.attributeName === 'style') {
+			if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' 
+				&& mutation.attributeName === 'style') {
 				dialogBoxVisible = !dialogBoxVisible;
 			}
 		});

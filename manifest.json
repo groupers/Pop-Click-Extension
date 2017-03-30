@@ -16,10 +16,10 @@
         "src/js/getters.js",
         "src/js/listeners.js",
         "src/js/3rdparty/jquery-3.1.1.min.js",
+        "src/js/render.js",
         "src/js/3rdparty/iziToast.min.js",
         "src/js/3rdparty/awesomplete.min.js",
-        "src/js/contentscript.js",
-        "src/js/render.js"
+        "src/js/contentscript.js"
       ],
       "css" : [
         "src/css/awesomplete.css",
@@ -29,12 +29,13 @@
 
   }],
   "browser_action": {
-
+    "default_icon": "src/images/PopClick.png",
     "default_popup": "src/view/popup.html"
 
   },
   "web_accessible_resources": [
     "src/images/sparkles.gif",
+    "src/view/popup_control.html",
     "src/view/popup.html",
     "src/css/awesomplete.css",
     "src/js/3rdparty/awesomplete.min.js",

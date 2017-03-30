@@ -1,4 +1,3 @@
-// Get today's date and time in a properly javascript/python format
 function getObjectFromHref(href) {
 	for( i=0; i < document.getElementsByTagName('a').length; i++) {
 		if(href === document.getElementsByTagName('a')[i].href) {
