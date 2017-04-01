@@ -2,6 +2,7 @@
 var chips = document.getElementsByClassName('chip')
 var genders = ["Female","Male","Other","Irrelevant"]
 var sizeSwitch = false;
+var popclickhost = 'http://localhost:8000';
 //Should pull from server the data tags
 
 $(document).ready(function() {
@@ -104,7 +105,16 @@ document.addEventListener('DOMContentLoaded', function() {
    	ran_age.value = in_age.value
    })
 });
-
+var spinnerState = false;
+function showSpinner() {
+	// spinnerState = !spinnerState;
+	// if(spinnerState) { 
+		// document.getElementById('preloadcursor').displayed='block'
+	// }
+}
+function closeSpinner() {
+	// document.getElementById('preloadcursor').displayed='none'
+}
 function flipInitialState() {
 	var middle = document.getElementById('middle');
 	var bottom = document.getElementById('bottom');
@@ -154,19 +164,17 @@ function displayElement(obj) {
 }
 
 function initialResponse(str) {
-	// setTimeout($('#preloadcursor').removeClass('active'), 1000)
-
 	var profile = new Array();
 	profile[0] = JSON.parse(str).profile
 	if(JSON.parse(str).hasOwnProperty('profile')) {
 		var stringifiedProfile = JSON.stringify(profile)
 		chrome.runtime.sendMessage({createprofile: stringifiedProfile}, function(response) {
-			fetchFileContent('http://localhost:8000/popclick/api/get/'+profile[0], logging)
+			fetchFileContent(popclickhost+'/popclick/api/get/'+profile[0], logging)
 		});
 		// If we receive a 200 response from logging
 	} else {
-		handleError(str)
 		// Popup error at the right place redirect the user to the page with the error (page 1 or 2)
+		handleError(str)
 	}
 }
 
@@ -174,27 +182,27 @@ function initialResponse(str) {
 Error Handling 
 Form validation
 **/
-function handleError(error){
+function handleError(error) {
 	// If invalid age, gender, not signed flip to first view
 	// If invalid interests, flip to second view if necessary
 	console.log(JSON.parse(error)['profile_error'])
 	console.log('return value above')
 	var error_call =JSON.parse(error)['profile_error']
 	var errcodesWindow1 = ["INVALID_AGE","INVALID_GENDER","NOT_SIGNED","MISSING_ATTRIBUTE"]
-	if(errcodesWindow1.indexOf(error_call) != -1 && !atInitialPage()){
+	if(errcodesWindow1.indexOf(error_call) != -1 && !atInitialPage()) {
 		flipInitialState();
 	}
-	if(error_call == "MISSING_ATTRIBUTE"){
+	if(error_call == "MISSING_ATTRIBUTE") {
 		publishError('Please fill in the form normally')
-	} else if(error_call == "INVALID_AGE"){
+	} else if(error_call == "INVALID_AGE") {
 		publishError('You must be older than 3 years old.')
-	} else if(error_call == "INVALID_GENDER"){
+	} else if(error_call == "INVALID_GENDER") {
 		publishError('Please select one of the displayed genders.')
-	} else if(error_call == "NOT_SIGNED"){
+	} else if(error_call == "NOT_SIGNED") {
 		publishError('Please sign the contract.')
-	} else if(error_call == "WRONG_DATE_FORMAT"){
+	} else if(error_call == "WRONG_DATE_FORMAT") {
 		publishError('There seems to be in issue with your time.')
-	} else if(error_call == "WRONG_INTERESTS"){
+	} else if(error_call == "WRONG_INTERESTS") {
 		publishError('Please select the appropriate amount of proposed interests.')
 	} else {
 		// Should be impossible 
@@ -202,8 +210,13 @@ function handleError(error){
 	}
 	console.log(atInitialPage()+"message")
 }
-function publishError(message){
-	Materialize.toast(message, 2000)
+function publishError(message, time) {
+	if(typeof time == 'undefined') {
+		time = 2000;
+	} else {
+		time = time*1000;
+	}
+	Materialize.toast(message, time)
 }
 
 function atInitialPage(){
@@ -239,12 +252,9 @@ function fetchFileContent(URL, cb) {
 	xhr.open('GET', URL, true)
 	xhr.send()
 }
-
 //Remember to toast if form isn't complete
 function postAccountCreation(logtime, age, interests, gender, signed, callback) {
-	var postUrl = 'http://localhost:8000/popclick/api/create/';
-	$('#preloadcursor').addClass('active');
-	$('#preloadcursor').show();
+	var postUrl = popclickhost+'/popclick/api/create/';
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
     xhr.open('POST', postUrl, true);
@@ -255,10 +265,12 @@ function postAccountCreation(logtime, age, interests, gender, signed, callback) 
         if (xhr.readyState == 4) {
         	// statusDisplay.innerHTML = '';
         	if (xhr.status == 200) {
-        		$('#preloadcursor').removeClass('active');
-				$('#preloadcursor').hide();
         		callback(xhr.responseText);
+     			return true;
         	}
+        	// else {
+        	// 	publishError('No connection to the server.')
+        	// }
         }
     };
     xhr.send(JSON.stringify({ "logtime":logtime, "age":age, "gender":gender, "interests":interests, "signed":signed}));

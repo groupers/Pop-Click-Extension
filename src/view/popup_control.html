@@ -1,8 +1,11 @@
 <html style="width:300px;height:400px;">
 <head>
- <link rel="stylesheet" href="../css/popup.css"></style>
+	<link rel="stylesheet" href="../css/popup.css"></style>
 </head>
 <body>
+	<style>
+		p{ display:inline; }
+	</style>
 	<script src="../js/3rdparty/jquery-3.1.1.min.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" href="../css/materialize.min.css"> 
 	<script src="../js/3rdparty/materialize.min.js"></script>
@@ -13,16 +16,31 @@
 		</center>
 	</div>
 	<br>
-		<div id="middle">
-			<div id="">		
-				<b><h6>Change your options when ever you want.</h6></b>
+	<div id="middle">
+		<h6>You may change the following settings:</h6>
+		<div class="divider"></div>
+		<div class="section">
+			<div class="row">
+				<div class="col s8">Toasts are <b><p id="ppage"></p></b> on this page.</div>
+				<div class="col s3"><a id="BlockPage" class="waves-effect waves-light btn">Page</a></div>
+			</div>
+			<div class="row">
+				<div class="col s7" style="">Toasts are <b><p id="psite"></p></b> on this website.</div>
+				<div class="col s4" style="maring-left:10px;"><a id="BlockWebsite" class="waves-effect waves-light btn">Website</a></div>
 			</div>
 		</div>
-		<div id="bottom">
+	</div>
+	<div id="bottom">
+		<div class="divider"></div>
+		<div class="section">
+			<div class="valign-wrapper">
+				<h6 class="valign">This following is your unique Token:</h6>
+			</div>
+			<div class="row">
+				<div class="offset-s3 col s4"><b><p id="ptoken" class="center-align"></p></b></div>
+			</div>
 		</div>
-	<div>
-		<button id="BlockPage">Page</button>
-		<button id="BlockWebsite">Website</button>
+		<div class="divider"></div>
 	</div>
 </body>
 <script src="../js/popup_control.js"></script>
