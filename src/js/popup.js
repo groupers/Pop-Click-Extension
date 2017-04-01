@@ -106,15 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
    })
 });
 var spinnerState = false;
-function showSpinner() {
-	// spinnerState = !spinnerState;
-	// if(spinnerState) { 
-		// document.getElementById('preloadcursor').displayed='block'
-	// }
-}
-function closeSpinner() {
-	// document.getElementById('preloadcursor').displayed='none'
-}
+
 function flipInitialState() {
 	var middle = document.getElementById('middle');
 	var bottom = document.getElementById('bottom');
@@ -227,12 +219,11 @@ function atInitialPage(){
 function logging(tes) {
 	tes = JSON.parse(tes);
 	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
-		console.log('auth on board')
-		window.location.href= "../view/popup_control.html";
-		chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
-
-		// <-- Check response here if 200 Save page state
 	});
+	// <-- Check response here if 200 Save page state
+	window.location.href= "../view/popup_control.html";
+	chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
+
 }
 
 function fetchFileContent(URL, cb) {
@@ -267,10 +258,9 @@ function postAccountCreation(logtime, age, interests, gender, signed, callback) 
         	if (xhr.status == 200) {
         		callback(xhr.responseText);
      			return true;
+        	} else {
+        		publishError('No connection to the server.')
         	}
-        	// else {
-        	// 	publishError('No connection to the server.')
-        	// }
         }
     };
     xhr.send(JSON.stringify({ "logtime":logtime, "age":age, "gender":gender, "interests":interests, "signed":signed}));
