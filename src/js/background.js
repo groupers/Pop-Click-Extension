@@ -298,19 +298,18 @@ function postSendObject(token, selectable, task, tabID, tabURL, callback) {
     xhr.open('POST', postUrl, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     // Handle request state change events
-    xhr.onreadystatechange = function() {
-    	if (xhr.readyState == 4) {
-    		if (xhr.status == 200) {
-    			if (callback) {
-    				callback(xhr.responseText, tabID, tabURL);
+    	xhr.onreadystatechange = function() {
+    		if (xhr.readyState == 4) {
+    			if (xhr.status == 200) {
+    				if (callback) {
+    					callback(xhr.responseText, tabID, tabURL);
+    				}
     			}
-    		} else {
-                // Show what went wrong
-                // statusDisplay.innerHTML = 'Error saving: ' + xhr.statusText;
             }
-        }
-    };
-    xhr.send(selectable);
+        };
+        xhr.timeout = 5000;
+        xhr.send(selectable);
+
 }
 
 //Add click to collection of clicks

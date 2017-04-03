@@ -276,7 +276,10 @@ function createDialogBox(){
 		return true;
 	}
 	new Awesomplete(input, {
-		list: listofnameElements,
+		// Remove duplicates
+		list: listofnameElements.filter( function( item, index, inputArray ) {
+           return inputArray.indexOf(item) == index;
+    }),
 		filter: function (text, input) {
 			if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 
 				&& ( pre_lev(text.toLowerCase(),input.toLowerCase())>0 
