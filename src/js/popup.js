@@ -117,12 +117,14 @@ function flipInitialState() {
 		$('#initial-1').hide()
 		$('#initial-2').hide()
 		$('#interests').show()
+		$('#submitInitial').show()
 	} else {
 		bottom.style.height = '60%';
 		middle.style.height = '30%';
 		$('#initial-1').show()
 		$('#initial-2').show()
 		$('#interests').hide()
+		$('#submitInitial').hide()
 	}
 	sizeSwitch = !sizeSwitch;
 }

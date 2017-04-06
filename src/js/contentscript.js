@@ -17,6 +17,15 @@ var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_hr
 var feedback_info_timestamp = null, feedback_info_link = null;
 var iziToasts = new Map();
 var sentObjects = new Map();
+
+function valid_Authentication(){
+
+	chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
+}
+
+// function checkConnection(){
+// 	chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
+// }
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
@@ -210,6 +219,7 @@ function generateDialogContent(url) {
 	});
 }
 
+main()
 function main(){
 
 	for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++) {
@@ -251,7 +261,6 @@ function main(){
 	}
 	createDialogBox()
 }
-main()
 	// If no text nor title find end half of the url :
 	// /something/ or /something
 	// #something
