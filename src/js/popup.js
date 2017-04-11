@@ -78,7 +78,17 @@ $(document).ready(function() {
 		var c = (3 - chips_count);
 		document.getElementById('number_of_select').innerText = c;
 	});
+	$('#showDialog').click(function() {
+		showDialog();
+	});
 });
+
+function showDialog() {
+	chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+		var activeTab = tabs[0];
+		chrome.tabs.sendMessage(activeTab.id, {action: "show_dialog"});
+	});
+}
 
 document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById('initialForm').addEventListener('submit', initialPost)
@@ -117,6 +127,7 @@ function flipInitialState() {
 		$('#initial-1').hide()
 		$('#initial-2').hide()
 		$('#interests').show()
+		$('#showDialog').hide()
 		$('#submitInitial').show()
 	} else {
 		bottom.style.height = '60%';
@@ -124,6 +135,7 @@ function flipInitialState() {
 		$('#initial-1').show()
 		$('#initial-2').show()
 		$('#interests').hide()
+		$('#showDialog').show()
 		$('#submitInitial').hide()
 	}
 	sizeSwitch = !sizeSwitch;
@@ -204,6 +216,7 @@ function handleError(error) {
 	}
 	console.log(atInitialPage()+"message")
 }
+
 function publishError(message, time) {
 	if(typeof time == 'undefined') {
 		time = 2000;
@@ -222,29 +235,11 @@ function logging(tes) {
 	tes = JSON.parse(tes);
 	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
 	});
-	// <-- Check response here if 200 Save page state
 	window.location.href= "../view/popup_control.html";
 	chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
 
 }
 
-function fetchFileContent(URL, cb) {
-	var xhr = new XMLHttpRequest()
-	xhr.ontimeout = function() {
-		console.error('Please contact support.')
-	};
-	xhr.onload = function () {
-		if (xhr.readyState === 4) {
-			if (xhr.status === 200) {
-				cb(xhr.response);
-			} else {
-				publishError('There seems to be an issue with your connection to the server.')
-			}
-		}
-	};
-	xhr.open('GET', URL, true)
-	xhr.send()
-}
 //Remember to toast if form isn't complete
 function postAccountCreation(logtime, age, interests, gender, signed, callback) {
 	var postUrl = popclickhost+'/popclick/api/create/';
@@ -259,7 +254,7 @@ function postAccountCreation(logtime, age, interests, gender, signed, callback) 
         	// statusDisplay.innerHTML = '';
         	if (xhr.status == 200) {
         		callback(xhr.responseText);
-     			return true;
+        		return true;
         	} else {
         		publishError('No connection to the server.')
         	}

@@ -11,9 +11,9 @@
       ],
       "js": [
         "src/js/helpers.js",
+        "src/js/3rdparty/3rdpartyhelpers.js",
         "src/js/levenshtein.js",
         "src/js/3rdparty/localstoragedb.js",
-        "src/js/getters.js",
         "src/js/listeners.js",
         "src/js/3rdparty/jquery-3.1.1.min.js",
         "src/js/render.js",
@@ -43,6 +43,7 @@
    "background": {
      "scripts": [
       "src/js/helpers.js",
+      "src/js/3rdparty/3rdpartyhelpers.js",
       "src/js/3rdparty/localstoragedb.js",
       "src/js/background.js"
     ]

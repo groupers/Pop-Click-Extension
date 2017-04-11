@@ -16,6 +16,7 @@
 		position: fixed;
 		z-index: 999;
 	}
+	/*From @Stackoverflow: Standard material-icons use */
 	.material-icons {
 		font-family: 'Material Icons';
 		font-weight: normal;
@@ -43,6 +44,7 @@
 		/* Support for IE. */
 		font-feature-settings: 'liga';
 	}
+	
 	input {
 		height: 30px;
 		width: 20px;
@@ -117,7 +119,13 @@
 		float:right;
 		text-shadow:0px 1px 0px #2f6627;
 	}
-
+	
+	#showDialog {
+		position: absolute;
+		margin-top: 5px;
+		bottom: 4;
+		left: 60px;
+	}
 	#submitInitial {
 		position: absolute; 
 		bottom: 0;

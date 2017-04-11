@@ -18,8 +18,21 @@ if(PopClick_local_clickables.isNew()) {
 	PopClick_local_clickables.createTable("pageselectable", ["pagehref", "elementhref", "text", "selector", "clicks"]);
 	PopClick_local_clickables.commit();
 }
-var profileToken = PopClick_profile.queryAll("profile")[0]
+var profileToken = PopClick_profile.queryAll("profile")[0].token
+var profileAuth = PopClick_profile.queryAll("profile")[0].privatekey
 
+function validAuthentication(validating){
+	if(validating == "Valid") {
+		chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
+	} else {
+		chrome.browserAction.setPopup({popup: "src/view/popup.html"})
+	}
+}
+
+function checkConnection(){
+	fetchValidStatus(popclickhost+"/popclick/api/validprofile/"+profileToken+"/", profileAuth, validAuthentication)
+}
+checkConnection()
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	if(msg) {
@@ -127,19 +140,20 @@ function blockRequest(URI_href, URI_host, operation) {
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdated should fire when the selected tab is changed or a link is clicked 
 	chrome.tabs.getSelected(null, function(tab) {
 		myURL = tab.url;
-		chrome.tabs.sendMessage(tabId, {action: "refresh_dialog", url: myURL}, function(response) {
-		});
-		var url = new URL(myURL)
-		if(!(isBlockedURI(url.href) || isBlockedURI('',url.hostname))) {
-			chrome.tabs.sendMessage(tabId, {action: "sendpage_info"}, function(response) {
-				if(response && response.objects) {
-					var profile_col = PopClick_profile.queryAll("profile")[0]
-					if(typeof profileToken != 'undefined') {
-						postPageObjects(profile_col.token, profile_col.privatekey, response.objects, tabId, myURL)
-					}
-				}
+			chrome.tabs.sendMessage(tabId, {action: "refresh_dialog", url: myURL}, function(response) {
 			});
-		}
+			checkConnection()
+			var url = new URL(myURL)
+			if(!(isBlockedURI(url.href) || isBlockedURI('',url.hostname))) {
+				chrome.tabs.sendMessage(tabId, {action: "sendpage_info"}, function(response) {
+					if(response && response.objects) {
+						var profile_col = PopClick_profile.queryAll("profile")[0]
+						if(typeof profileToken != 'undefined') {
+							postPageObjects(profile_col.token, profile_col.privatekey, response.objects, tabId, myURL)
+						}
+					}
+				});
+			}
 	});
 });
 
@@ -298,20 +312,35 @@ function postSendObject(token, selectable, task, tabID, tabURL, callback) {
     xhr.open('POST', postUrl, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     // Handle request state change events
-    	xhr.onreadystatechange = function() {
-    		if (xhr.readyState == 4) {
-    			if (xhr.status == 200) {
-    				if (callback) {
-    					callback(xhr.responseText, tabID, tabURL);
-    				}
+    xhr.onreadystatechange = function() {
+    	if (xhr.readyState == 4) {
+    		if (xhr.status == 200) {
+    			if (callback) {
+    				callback(xhr.responseText, tabID, tabURL);
     			}
-            }
-        };
-        xhr.timeout = 5000;
-        xhr.send(selectable);
+    		}
+    	}
+    };
+    xhr.timeout = 5000;
+    xhr.send(selectable);
 
 }
 
+function fetchValidStatus(URL, auth, cb) {
+	var xhr = new XMLHttpRequest()
+	xhr.ontimeout = function() {
+		console.error('Please contact support.')
+	};
+	xhr.onload = function () {
+		if (xhr.readyState === 4) {
+			if (xhr.status === 200) {
+				cb(xhr.responseText);
+			}
+		}
+	};
+	xhr.open('POST', URL, true)
+	xhr.send(JSON.stringify({"profile": auth}))
+}
 //Add click to collection of clicks
 chrome.browserAction.onClicked.addListener(function (tab) {
 	chrome.tabs.executeScript(tab.ib, {

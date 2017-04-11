@@ -18,19 +18,15 @@ var feedback_info_timestamp = null, feedback_info_link = null;
 var iziToasts = new Map();
 var sentObjects = new Map();
 
-function valid_Authentication(){
-
-	chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
-}
-
-// function checkConnection(){
-// 	chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
-// }
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
 		generateDialogContent(msg.url);
 		window.localStorage['location'] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
+	}
+
+	if(msg.action === 'show_dialog') {
+		document.getElementById('TheDialogBox').style.display = ''
 	}
 
 	if(msg.action == 'sendpage_info') {
@@ -160,6 +156,7 @@ function e(elementShort, text, href, ID, classname, order, kind){
 	}
 	return returnvalue;
 }
+
 //This only works if ButtonCollection already exists
 function generateDialogContent(url) {
 	if (typeof url === 'undefined') { 
@@ -261,12 +258,7 @@ function main(){
 	}
 	createDialogBox()
 }
-	// If no text nor title find end half of the url :
-	// /something/ or /something
-	// #something
-	// Backend processing on python
-	// When multiple text or href seem to have similar substrings remove uncommons
-	// If url contains mean URI followed by /# Remove from list :=> Put it in the list of unwanted
+
 function createDialogBox(){
 	var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :"/>';
 	var dim_div = document.createElement("div");
@@ -281,9 +273,7 @@ function createDialogBox(){
 	div.style.left = "50px";
 	div.style.display = "none";
 	var input = document.getElementById("AwesompleteInputfield");
-	function sorting(text, input) {
-		return true;
-	}
+	
 	new Awesomplete(input, {
 		// Remove duplicates
 		list: listofnameElements.filter( function( item, index, inputArray ) {
@@ -315,6 +305,7 @@ function createDialogBox(){
 	});
 	observerDisplay.observe(div, { attributes: true });
 }
+
 /* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
 // Injecting script
 

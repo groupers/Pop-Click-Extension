@@ -19,38 +19,6 @@ function getLogtime() {
 	today = yyyy+'-'+mm+'-'+dd+' '+HH+':'+MM;
 	return today
 }
-// Adds EventListener By Stackoverflow, collaboration
-function addEvent(element, event, callback) {
-	if (element.addEventListener) {
-		element.addEventListener(event, callback, false);
-	} else if (element.attachEvent) {
-		element.attachEvent("on" + event, callback);
-	} else {
-		element["on" + event] = callback;
-	}
-}
-// String processing, so that we can slice and insert an item
-String.prototype.splice = function(idx, rem, str) {
-	return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
-};
-
-// Array Remove - By John Resig (MIT Licensed)
-Array.prototype.remove = function(from, to) {
-	var rest = this.slice((to || from) + 1 || this.length);
-	this.length = from < 0 ? this.length + from : from;
-	return this.push.apply(this, rest);
-};
-
-// Array Contains String + Trimming.
-Array.prototype.contains = function(obj) {
-	var i = this.length;
-	while (i--) {
-		if (this[i].toString().trim() === obj.toString().trim()) {
-			return true;
-		}
-	}
-	return false;
-}
 
 function containsKey(map, key) {
 	for(var prop in map) {
@@ -59,4 +27,46 @@ function containsKey(map, key) {
 		}
 	}
 	return false;
+}
+
+//Acts as a CSS selector
+/** Allows use to uniquely identify an HTML element **/
+function getPath(element) {
+	var path, node = element;
+	while(node) {
+		var name = node.localName;
+		if (!name) break;
+		name = name.toLowerCase();
+		if (inParentSameNodeName(node) > 1) {
+			name += ':eq(' + (indexInParent(node)) + ')';
+		}
+		path = name + (path ? '>' + path : '');
+		node = node.parentNode;
+	}
+	return path;
+}
+
+// Gets the index of the element among others who have the same nodeName
+function indexInParent(node) {
+	var children = node.parentNode.childNodes;
+	var num = 0;
+	for (var i=0; i<children.length; i++) {
+		if (children[i]==node) return num;
+		if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
+			num++;
+		}
+	}
+	return -1;
+}
+
+// Get number of elements containing the same nodeName
+function inParentSameNodeName(node) {
+	var children = node.parentNode.childNodes;
+	var num = 0;
+	for (var i=0; i<children.length; i++) {
+		if (children[i].nodeType==1 && children[i].nodeName == node.nodeName) {
+			num++;
+		}
+	}
+	return num;	
 }

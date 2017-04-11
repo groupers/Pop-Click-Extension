@@ -5,6 +5,9 @@ This is for content control
 $( document ).ready(function() {
 	getToken();
 	blockedStatus();
+	$('#showDialog').click( function() {
+		showDialog();
+	});
 });
 function blockedStatus() {
 	isBlockedRequest('webpage')
@@ -31,10 +34,12 @@ function isBlockedRequest(siteorpage) {
 
 function getToken() {
 	chrome.runtime.sendMessage({getToken: "head"}, function(response) {
-		if(response != "false") {
-			document.getElementById('ptoken').innerText = ""+response
-		} else {
-			document.getElementById('ptoken').innerText = "Not Found."
+		if(document.getElementById('ptoken')){
+			if(response != "false") {
+				document.getElementById('ptoken').innerText = ""+response
+			} else {
+				document.getElementById('ptoken').innerText = "Not Found."
+			}
 		}
 	});
 }
@@ -45,6 +50,7 @@ function addBlockedWebpage() {
 
 function addBlockedWebsite() {
 	chrome.runtime.sendMessage({block_website: "head"}, function(response) {});
+	showDialog();
 }
 
 var blockpage = document.getElementById('BlockPage')
@@ -60,4 +66,10 @@ if(blockwebsite) {
 		addBlockedWebsite();
 		blockedStatus();
 	}); 
+}
+function showDialog() {
+	chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+		var activeTab = tabs[0];
+		chrome.tabs.sendMessage(activeTab.id, {action: "show_dialog"});
+	});
 }

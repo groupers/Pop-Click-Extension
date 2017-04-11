@@ -3,7 +3,7 @@
   Params: String a, String b
   Return: minimum levenshtein distance
 **/
-function pre_lev(a,b) {
+function pre_lev(a, b) {
   // Current string a index start, 
   // Current string a index finish,    
   // Index of the minimum value,
@@ -33,25 +33,25 @@ function levenshtein_distance(a, b) {
   //If a string has no length then we return the length of other string.
   if(a.length == 0) return b.length; 
   if(b.length == 0) return a.length;
-  // Initialising pointers and 2d matrix
-  var matrix = [[0]], i = 0, j = 0;
-  // Populating one dimension of the matrix with size of string b
+  // Initialising pointers and 2d array2d
+  var array2d = [[0]], i = 0, j = 0;
+  // Populating one dimension of the array2d with size of string b
   for(i, bl = b.length; i <= bl; i++){
-    matrix[i] = [i];
+    array2d[i] = [i];
   }
-  // Populating the first column of the matrix with size of string a
+  // Populating the first column of the array2d with size of string a
   for(j, al = a.length; j <= al; j++){
-    matrix[0][j] = j;
+    array2d[0][j] = j;
   }
   for(i = 1, bl = b.length; i <= bl; i++){
     for(j = 1, al = a.length; j <= al; j++){
       // If both characters match set the diagnol value of the current item to the previous item indexed at -1 diagonally
       if(b.charAt(i-1) == a.charAt(j-1)){
-        matrix[i][j] = matrix[i-1][j-1];
+        array2d[i][j] = array2d[i-1][j-1];
       } else {
-          matrix[i][j] = Math.min(Math.min(matrix[i][j-1] + 1,matrix[i-1][j] + 1), matrix[i-1][j-1] + 1);
+          array2d[i][j] = Math.min(Math.min(array2d[i][j-1] + 1,array2d[i-1][j] + 1), array2d[i-1][j-1] + 1);
         }
       }
     }
-    return matrix[b.length][a.length];
+    return array2d[b.length][a.length];
   }
