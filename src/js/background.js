@@ -24,7 +24,7 @@ var profileAuth = PopClick_profile.queryAll("profile")[0].privatekey
 function validAuthentication(validating){
 	if(validating == "Valid") {
 		chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
-	} else {
+	} else if(validating =="Invalid" ){
 		chrome.browserAction.setPopup({popup: "src/view/popup.html"})
 	}
 }
@@ -32,7 +32,7 @@ function validAuthentication(validating){
 function checkConnection(){
 	fetchValidStatus(popclickhost+"/popclick/api/validprofile/"+profileToken+"/", profileAuth, validAuthentication)
 }
-checkConnection()
+// checkConnection();
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	if(msg) {

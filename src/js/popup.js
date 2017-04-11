@@ -240,6 +240,24 @@ function logging(tes) {
 
 }
 
+function fetchFileContent(URL, cb) {
+	var xhr = new XMLHttpRequest()
+	xhr.ontimeout = function() {
+		console.error('Please contact support.')
+	};
+	xhr.onload = function () {
+		if (xhr.readyState === 4) {
+			if (xhr.status === 200) {
+				cb(xhr.response);
+			} else {
+				publishError('There seems to be an issue with your connection to the server.')
+			}
+		}
+	};
+	xhr.open('GET', URL, true)
+	xhr.send()
+}
+
 //Remember to toast if form isn't complete
 function postAccountCreation(logtime, age, interests, gender, signed, callback) {
 	var postUrl = popclickhost+'/popclick/api/create/';

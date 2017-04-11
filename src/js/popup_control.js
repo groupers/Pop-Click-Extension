@@ -50,7 +50,6 @@ function addBlockedWebpage() {
 
 function addBlockedWebsite() {
 	chrome.runtime.sendMessage({block_website: "head"}, function(response) {});
-	showDialog();
 }
 
 var blockpage = document.getElementById('BlockPage')
