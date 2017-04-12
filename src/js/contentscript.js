@@ -17,6 +17,17 @@ var feedback_info_timestamp = null, feedback_info_link = null;
 var iziToasts = new Map();
 var sentObjects = new Map();
 
+/** 
+* Content script onMessage listener
+* @params {msg}
+* @params {sender}
+* @params {sendResponse}
+* @message action handling:
+*	- refresh_dialog
+*	- show_dialog
+*	- sendpage_info
+*	- feedback_info
+**/
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
 	if(msg.action == 'refresh_dialog') {
@@ -96,13 +107,24 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 });
 
-//HTML DOM ELEMENT SHORTS
+// HTML DOM ELEMENT SHORTS
 var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5, script = 7, link = 8;
-// Generate DOM element <p>
+/**
+* Generate DOM element
+* @params {number} elementShort
+* @params {string} text
+* @params {string} href
+* @params {string} ID
+* @params {string} classname
+* @params {number} order
+* @params {string} kind
+*
+* @return {string} html element
+**/
 function e(elementShort, text, href, ID, classname, order, kind){
 	var returnvalue = "";
+	if (typeof text === 'undefined' || text.length == 0) return ;
 	text = text.trim();
-	if (text.length == 0 || typeof text === 'undefined') return ;
 	if (typeof ID === 'undefined') { ID = ''; }
 	if (typeof href === 'undefined') { href = ''; }
 	if (typeof classname === 'undefined') { classname = ''; }
@@ -155,8 +177,13 @@ function e(elementShort, text, href, ID, classname, order, kind){
 	}
 	return returnvalue;
 }
-
-//This only works if ButtonCollection already exists
+/**
+*
+* Populates the DialogBox and allows refreshing the dialogbox
+* Example: When the user updates the navigation tab
+* @params {string} url
+*
+**/
 function generateDialogContent(url) {
 	if (typeof url === 'undefined') { 
 		url = ''; 
@@ -165,26 +192,40 @@ function generateDialogContent(url) {
 		array[0] = url;
 		stringifiedArray = JSON.stringify(array);
 	}
+	/**
+	* @action {chrome.runtime.sendMessage}
+	* @params {{string: JSON(url)}} {sendinginitialisation: stringifiedArray}
+	**/
 	chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
+		// Retrieve elements text and href from callback
 		highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
 		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
+
 		var dialogbuttons = document.getElementById("ButtonCollection");
+		// If the dialogBox is empty generate content
 		if(dialogbuttons != null && dialogbuttons.firstChild != null){
 			while (dialogbuttons.firstChild) {
 				dialogbuttons.removeChild(dialogbuttons.firstChild);
 			}
 			var randomListOfAnchors = []
-
+			// Select the 10 first of elements of the list (random procedure)
 			for (i = 0 ; i < document.getElementsByTagName('a').length; i++) {
 				if(!highest_clicks_href.contains(document.getElementsByTagName('a')[i])) {
 					randomListOfAnchors.push(i);
 				}
+				if(highest_clicks_text.length > (i+1)){
+					if(highest_clicks_text[i] == 'not-found' || highest_clicks_href[i] == ""){
+						highest_clicks_text.remove(i)
+						highest_clicks_href.remove(i)
+					}
+				}
 			}
-			randomListOfAnchors[randomListOfAnchorsIterator]
 			var randomListOfAnchorsIterator = 0;
 			var dialog_elements = {}
+			// Creates an an anchor tag corresponding to the conventioned style with the given parameters
 			for (i = 0; i < 10; i++){
 				var text, href;
+				console.log(highest_clicks_text[i])
 				if(highest_clicks_text[i] != undefined) {
 					text = highest_clicks_text[i];
 					href = highest_clicks_href[i];
@@ -204,6 +245,7 @@ function generateDialogContent(url) {
 					dialogbuttons.innerHTML += anchor;
 				}
 			}
+			// If the kind of an element is personal than we show a background color which is green
 			for(i = 0 ; i < document.getElementsByClassName('btnabox').length; i++) {
 				var currentElement =document.getElementsByClassName('btnabox')[i];
 				if(currentElement.getAttribute('kind') === 'pers') {
@@ -216,37 +258,11 @@ function generateDialogContent(url) {
 }
 
 main()
+/**
+* @constructor 
+* 
+**/
 function main(){
-
-	for (i=0; i < (10 - highest_clicks_text.length) && document.getElementsByTagName('a')[i]; i++) {
-		str.push(document.getElementsByTagName('a')[i]);
-	}
-	str.sort();
-	var pointer = 1;
-	if(str.length >= 2) {
-		for (i=0; i < str.length; i++) {
-			if(/(javascript\(.*\)|.*\/\#)$/.test(str[i].href)) {
-				str.remove(i);
-				i--;
-			}
-		}
-	}
-	for (i=0; i < str.length; i++) {
-		var text = "";
-		if(str[i].text.length == 0 && str[i].title != "") {
-			text = str[i].title;
-		} else {
-			text = str[i].text;
-		}
-		var currentElement = e(a, text, str[i].href, "", "btnabox", inListElements);
-		// Verifies if the element exists, in case some how in the handling something went wrong.
-		//Problem when the anchor tag starts with # for some reason.
-		//Example: https://developer.chrome.com/extensions/content_scripts#pi
-		if(currentElement || currentElement != "") {
-			string += currentElement;
-			++inListElements;
-		}
-	}
 	for (i = 0; i < 500 && i < document.getElementsByTagName('a').length; i++) {
 		var currentAnchor = document.getElementsByTagName('a')[i];
 		var currentElement = (currentAnchor.text).replace(/\s/g,' ');
@@ -256,6 +272,7 @@ function main(){
 		}
 	}
 	createDialogBox()
+	generateDialogContent();
 }
 
 function createDialogBox(){
@@ -266,7 +283,7 @@ function createDialogBox(){
 	document.body.appendChild(div); 
 	div.id = "TheDialogBox"
 	div.innerHTML = e(d, e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
-	div.innerHTML += e(d, string, "default", "ButtonCollection", "btncollector");
+	div.innerHTML += e(d, e(a, "initial", "", "", "btnabox",0), "default", "ButtonCollection", "btncollector");
 	div.innerHTML += e(d,inputfield,"DialogBoxFoot","dialogBoxFoot");
 	div.style.position = "float";
 	div.style.left = "50px";
@@ -289,8 +306,6 @@ function createDialogBox(){
 		}
 	});
 
-	generateDialogContent();
-
 	var dialogBoxVisible = false;
 	// Observer for when the div element has it's class attribute altered
 	/** Observing the visibility of the dialog box **/
@@ -305,7 +320,7 @@ function createDialogBox(){
 	observerDisplay.observe(div, { attributes: true });
 }
 
-/* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
+/** vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv **/
 // Injecting script
 
 var s = document.createElement('script');

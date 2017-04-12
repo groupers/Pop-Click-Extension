@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/js/listeners.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  </ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/js/listeners.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">//Add algorithm method to select the element with the most caracters :
+//Order of the words, order of the letters, words in common, letters in common.
+
+// Key press listener on enter key
+window.localStorage[&apos;location&apos;] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
+
+addEvent(document, &quot;keypress&quot;, function(e) {
+	e = e || window.event;
+	if(e.keyCode == &quot;13&quot;) {
+		var inputfield = document.getElementById(&apos;AwesompleteInputfield&apos;);
+		var redirectPath = mapOfElements.get(inputfield.value);
+		if(window.getComputedStyle(div).getPropertyValue(&apos;display&apos;) !== &apos;none&apos; &amp;&amp; redirectPath &amp;&amp; inputfield.value &amp;&amp; inputfield.value.length &gt; 0 &amp;&amp;  inputfield == document.activeElement) {
+			var array = new Array();
+			array[0] = document.location.href;
+			array[1] = redirectPath;
+			array[2] = inputfield.value.trim();
+			var stringifiedArray = JSON.stringify(array);
+			console.log(stringifiedArray)
+			chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
+				if(b &amp;&amp; b.backgroundMsg) {
+					console.log(b.backgroundMsg);
+				}
+			});    		
+			document.location = redirectPath;
+		}
+	}
+	if(+e.keyCode &gt; 47 &amp;&amp; +e.keyCode &lt; 58 &amp;&amp; +e.altKey +e.shiftKey) {
+		//Add if shortcut click option is activated
+		if(Object.keys(iziToasts).length &gt; 0){
+			if(typeof iziToasts[&apos;[&apos;+(e.keyCode-48)+&apos;]&apos;] !== &apos;undefined&apos;){
+				document.location = iziToasts[&apos;[&apos;+(e.keyCode-48)+&apos;]&apos;];
+			}
+		}
+	}
+});
+
+addEvent(document, &quot;click&quot;, function(event) {
+		var targetElement = event.target || event.srcElement;
+		var array = new Array();
+		if(JSON.parse(window.localStorage[&apos;location&apos;]) != undefined){
+			array[0] = JSON.parse(window.localStorage[&apos;location&apos;])[2]
+			var parentElementA = undefined, currentElement = targetElement;
+			if(targetElement.className != &apos;closingCollector&apos;){
+				if(targetElement.nodeName != &apos;A&apos; &amp;&amp; targetElement.className != &apos;btnabox&apos;) {
+					for(i = 0; i &lt; 6; i++){
+						if (currentElement.parentElement == undefined) {
+							break;
+						} else {
+							currentElement = currentElement.parentElement;
+						}
+						if(currentElement.nodeName == &apos;A&apos;) {
+							parentElementA = currentElement;
+							break;
+						}
+					}
+				}
+				if(targetElement.nodeName == &apos;A&apos; || parentElementA) {
+					if(parentElementA) {
+						targetElement = parentElementA;
+					}
+					array[1] = targetElement.href;
+				
+				array[2] = targetElement.innerText.trim()|| &quot;not-found&quot;
+				if(targetElement.className != &apos;btnabox&apos;) {
+					// array[3] = getPath(targetElement);
+					array[3] = &quot;something&quot;
+				} else {
+					array[2] = array[2].replace(/\s\[\d*\]$/,&quot;&quot;)
+
+					// Get object selector with same page,href
+					array[3] = &apos;btnabox-element&apos;;
+				}
+				array[4] = JSON.parse(window.localStorage[&apos;location&apos;])[0]
+				array[5] = JSON.parse(window.localStorage[&apos;location&apos;])[1]
+				var stringifiedArray = JSON.stringify(array);
+				//Have to make sure it matches run time : Test if link clicked in fb message.
+				if(stringifiedArray != null){
+					chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
+						if(b &amp;&amp; b.backgroundMsg){
+							console.log(b.backgroundMsg);
+						}
+						console.log(&apos;Callback object just above&apos;);
+					});
+				}
+			}
+			var iziToaster = false;
+			if(targetElement.className == &apos;iziToast-body&apos;){
+				iziToaster = true;
+			}
+			else if(targetElement.className == &apos;slideIn&apos;){
+				targetElement = targetElement.parentNode
+				iziToaster = true;
+			}
+			else if(targetElement.classList[0] == &apos;iziToast&apos;){
+				targetElement = targetElement.childNodes[2]
+				iziToaster = true;
+			}
+			if(iziToaster == true){
+				if(/\[[0-9]\]/.test(targetElement.firstChild.innerHTML)){
+					window.location = iziToasts[targetElement.firstChild.innerHTML];
+				}
+			}
+		}
+	}
+});</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.5.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

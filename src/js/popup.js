@@ -44,11 +44,14 @@ $(document).ready(function() {
 			tag: 'Craft',
 		}]
 	});
+
 	Array.from(chips).forEach(function(element) {
 		element.value = 0;
 	});
+
 	$('.chip > i').hide();
 	$('.chips > input').remove();
+
 	var chips_count = 0;
 	$('.chips').on('chip.select', function(e, chip) {
 		Array.from(chips).forEach(function(element) {
@@ -78,9 +81,11 @@ $(document).ready(function() {
 		var c = (3 - chips_count);
 		document.getElementById('number_of_select').innerText = c;
 	});
+
 	$('#showDialog').click(function() {
 		showDialog();
 	});
+
 });
 
 function showDialog() {
@@ -218,20 +223,25 @@ function handleError(error) {
 }
 
 function publishError(message, time) {
+	
 	if(typeof time == 'undefined') {
 		time = 2000;
 	} else {
 		time = time*1000;
 	}
 	Materialize.toast(message, time)
+
 }
 
 function atInitialPage(){
+
 	return (+($('#interests').is(":visible")) + 1)%2
+
 }
 
 
 function logging(tes) {
+
 	tes = JSON.parse(tes);
 	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
 	});
@@ -243,14 +253,20 @@ function logging(tes) {
 function fetchFileContent(URL, cb) {
 	var xhr = new XMLHttpRequest()
 	xhr.ontimeout = function() {
+
 		console.error('Please contact support.')
+
 	};
 	xhr.onload = function () {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200) {
+
 				cb(xhr.response);
+
 			} else {
+
 				publishError('There seems to be an issue with your connection to the server.')
+			
 			}
 		}
 	};
@@ -271,10 +287,14 @@ function postAccountCreation(logtime, age, interests, gender, signed, callback) 
         if (xhr.readyState == 4) {
         	// statusDisplay.innerHTML = '';
         	if (xhr.status == 200) {
+
         		callback(xhr.responseText);
         		return true;
+
         	} else {
+
         		publishError('No connection to the server.')
+        	
         	}
         }
     };

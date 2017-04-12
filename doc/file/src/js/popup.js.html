@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/js/popup.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  </ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/js/popup.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">
+var chips = document.getElementsByClassName(&apos;chip&apos;)
+var genders = [&quot;Female&quot;,&quot;Male&quot;,&quot;Other&quot;,&quot;Irrelevant&quot;]
+var sizeSwitch = false;
+var popclickhost = &apos;http://localhost:8000&apos;;
+//Should pull from server the data tags
+
+$(document).ready(function() {
+	$(&apos;select&apos;).material_select();
+	$(&apos;.chips&apos;).material_chip();
+	$(&apos;#sparkles&apos;).hide();
+	$(&apos;.chips-initial&apos;).material_chip({
+		data: [{
+			tag: &apos;News &amp; Media&apos;,
+		}, {
+			tag: &apos;Fashion&apos;,
+		}, {
+			tag: &apos;Tech&apos;,
+		}, {
+			tag: &apos;Finance &amp; Economics&apos;,
+		}, {
+			tag: &apos;Music&apos;,
+		}, {
+			tag: &apos;Cars&apos;,
+		},{
+			tag: &apos;Sports&apos;,
+		}, {
+			tag: &apos;Games &amp; Tech&apos;,
+		}, {
+			tag: &apos;Shopping&apos;,
+		}, {
+			tag: &apos;Literature&apos;,
+		},{
+			tag: &apos;Travel&apos;,
+		}, {
+			tag: &apos;Arts&apos;,
+		}, {
+			tag: &apos;Social Awareness&apos;,
+		}, {
+			tag: &apos;Science&apos;,
+		}, {
+			tag: &apos;Movies &amp; Theatre&apos;,
+		}, {
+			tag: &apos;Craft&apos;,
+		}]
+	});
+	Array.from(chips).forEach(function(element) {
+		element.value = 0;
+	});
+	$(&apos;.chip &gt; i&apos;).hide();
+	$(&apos;.chips &gt; input&apos;).remove();
+	var chips_count = 0;
+	$(&apos;.chips&apos;).on(&apos;chip.select&apos;, function(e, chip) {
+		Array.from(chips).forEach(function(element) {
+			if(chip.tag == element.outerText){
+				element.className = &quot;chip&quot;;
+				if((element.value+1)%2) {
+					if(chips_count &lt; 3){
+						element.value = (element.value+1)%2;
+						chips_count++;
+						element.style.backgroundColor = &apos;#26a69a&apos;;
+						element.style.color = &apos;white&apos;;
+					}
+				} else {
+					element.value = (element.value+1)%2;
+					chips_count--;
+					element.style.backgroundColor = &apos;#e4e4e4&apos;;
+					element.style.color = &apos;rgba(0,0,0,0.6)&apos;;
+
+				}
+				if(chips_count &gt; 2) {
+					$(&apos;#sparkles&apos;).show();
+				} else {
+					$(&apos;#sparkles&apos;).hide();
+				}
+			}		
+		});
+		var c = (3 - chips_count);
+		document.getElementById(&apos;number_of_select&apos;).innerText = c;
+	});
+	$(&apos;#showDialog&apos;).click(function() {
+		showDialog();
+	});
+});
+
+function showDialog() {
+	chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+		var activeTab = tabs[0];
+		chrome.tabs.sendMessage(activeTab.id, {action: &quot;show_dialog&quot;});
+	});
+}
+
+document.addEventListener(&apos;DOMContentLoaded&apos;, function() {
+	document.getElementById(&apos;initialForm&apos;).addEventListener(&apos;submit&apos;, initialPost)
+   // When the user ticks to agree on the contract
+   var signing = document.getElementById(&apos;signing&apos;)
+
+   var ran_age = document.getElementById(&apos;ran_age&apos;)
+   var in_age = document.getElementById(&apos;in_age&apos;)
+   if (signing.value == undefined){
+   	signing.value = 0;
+   }
+   signing.addEventListener(&apos;click&apos;, function() {
+   	signing.value = (+(signing.value) + 1)%2
+   	if(signing.value){
+   		setTimeout(flipInitialState, 500);
+   	}
+   }); 
+   ran_age.value = 18;
+   in_age.value = 18;
+   ran_age.addEventListener(&apos;change&apos;, function() {
+   	in_age.value = ran_age.value
+   })
+   in_age.addEventListener(&apos;change&apos;, function() {
+   	ran_age.value = in_age.value
+   })
+});
+var spinnerState = false;
+
+function flipInitialState() {
+	var middle = document.getElementById(&apos;middle&apos;);
+	var bottom = document.getElementById(&apos;bottom&apos;);
+
+	if(!sizeSwitch){
+		bottom.style.height = &apos;70%&apos;;
+		middle.style.height = &apos;20%&apos;;
+		$(&apos;#initial-1&apos;).hide()
+		$(&apos;#initial-2&apos;).hide()
+		$(&apos;#interests&apos;).show()
+		$(&apos;#showDialog&apos;).hide()
+		$(&apos;#submitInitial&apos;).show()
+	} else {
+		bottom.style.height = &apos;60%&apos;;
+		middle.style.height = &apos;30%&apos;;
+		$(&apos;#initial-1&apos;).show()
+		$(&apos;#initial-2&apos;).show()
+		$(&apos;#interests&apos;).hide()
+		$(&apos;#showDialog&apos;).show()
+		$(&apos;#submitInitial&apos;).hide()
+	}
+	sizeSwitch = !sizeSwitch;
+}
+
+function initialInterests() {
+	var interests = []
+	Array.from(chips).forEach(function(element) {
+		if(element.value == 1 ){
+			interests.push(element.innerText)
+		}
+	})
+	return interests
+}
+
+function initialPost() {
+	event.preventDefault()
+	var age = document.getElementById(&apos;in_age&apos;).value
+	var gender = genders[document.getElementById(&apos;gender&apos;).value-1]
+	var signed = document.getElementById(&apos;signing&apos;).value
+	postAccountCreation(getLogtime(), age, initialInterests(), gender, signed, initialResponse);
+}
+
+function displayElement(obj) {
+	var obj = document.getElementById(obj);
+	if (obj.style.visibility == &apos;visible&apos;) {
+		obj.style.visibility = &apos;hidden&apos;;
+	}
+	else {
+		obj.style.visibility = &apos;visible&apos;;
+	}
+}
+
+function initialResponse(str) {
+	var profile = new Array();
+	profile[0] = JSON.parse(str).profile
+	if(JSON.parse(str).hasOwnProperty(&apos;profile&apos;)) {
+		var stringifiedProfile = JSON.stringify(profile)
+		chrome.runtime.sendMessage({createprofile: stringifiedProfile}, function(response) {
+			fetchFileContent(popclickhost+&apos;/popclick/api/get/&apos;+profile[0], logging)
+		});
+		// If we receive a 200 response from logging
+	} else {
+		// Popup error at the right place redirect the user to the page with the error (page 1 or 2)
+		handleError(str)
+	}
+}
+
+/**
+Error Handling 
+Form validation
+**/
+function handleError(error) {
+	// If invalid age, gender, not signed flip to first view
+	// If invalid interests, flip to second view if necessary
+	console.log(JSON.parse(error)[&apos;profile_error&apos;])
+	console.log(&apos;return value above&apos;)
+	var error_call =JSON.parse(error)[&apos;profile_error&apos;]
+	var errcodesWindow1 = [&quot;INVALID_AGE&quot;,&quot;INVALID_GENDER&quot;,&quot;NOT_SIGNED&quot;,&quot;MISSING_ATTRIBUTE&quot;]
+	if(errcodesWindow1.indexOf(error_call) != -1 &amp;&amp; !atInitialPage()) {
+		flipInitialState();
+	}
+	if(error_call == &quot;MISSING_ATTRIBUTE&quot;) {
+		publishError(&apos;Please fill in the form normally&apos;)
+	} else if(error_call == &quot;INVALID_AGE&quot;) {
+		publishError(&apos;You must be older than 3 years old.&apos;)
+	} else if(error_call == &quot;INVALID_GENDER&quot;) {
+		publishError(&apos;Please select one of the displayed genders.&apos;)
+	} else if(error_call == &quot;NOT_SIGNED&quot;) {
+		publishError(&apos;Please sign the contract.&apos;)
+	} else if(error_call == &quot;WRONG_DATE_FORMAT&quot;) {
+		publishError(&apos;There seems to be in issue with your time.&apos;)
+	} else if(error_call == &quot;WRONG_INTERESTS&quot;) {
+		publishError(&apos;Please select the appropriate amount of proposed interests.&apos;)
+	} else {
+		// Should be impossible 
+		publishError(&apos;Contact support.&apos;)
+	}
+	console.log(atInitialPage()+&quot;message&quot;)
+}
+
+function publishError(message, time) {
+	if(typeof time == &apos;undefined&apos;) {
+		time = 2000;
+	} else {
+		time = time*1000;
+	}
+	Materialize.toast(message, time)
+}
+
+function atInitialPage(){
+	return (+($(&apos;#interests&apos;).is(&quot;:visible&quot;)) + 1)%2
+}
+
+
+function logging(tes) {
+	tes = JSON.parse(tes);
+	chrome.runtime.sendMessage({updateprivate: tes.auth}, function(response) {
+	});
+	window.location.href= &quot;../view/popup_control.html&quot;;
+	chrome.browserAction.setPopup({popup: &quot;src/view/popup_control.html&quot;})
+
+}
+
+function fetchFileContent(URL, cb) {
+	var xhr = new XMLHttpRequest()
+	xhr.ontimeout = function() {
+		console.error(&apos;Please contact support.&apos;)
+	};
+	xhr.onload = function () {
+		if (xhr.readyState === 4) {
+			if (xhr.status === 200) {
+				cb(xhr.response);
+			} else {
+				publishError(&apos;There seems to be an issue with your connection to the server.&apos;)
+			}
+		}
+	};
+	xhr.open(&apos;GET&apos;, URL, true)
+	xhr.send()
+}
+
+//Remember to toast if form isn&apos;t complete
+function postAccountCreation(logtime, age, interests, gender, signed, callback) {
+	var postUrl = popclickhost+&apos;/popclick/api/create/&apos;;
+    // Set up an asynchronous AJAX POST request
+    var xhr = new XMLHttpRequest();
+    xhr.open(&apos;POST&apos;, postUrl, true);
+    xhr.setRequestHeader(&quot;Content-Type&quot;, &quot;application/json&quot;);
+    // Handle request state change events
+    xhr.onreadystatechange = function() { 
+        // If the request completed
+        if (xhr.readyState == 4) {
+        	// statusDisplay.innerHTML = &apos;&apos;;
+        	if (xhr.status == 200) {
+        		callback(xhr.responseText);
+        		return true;
+        	} else {
+        		publishError(&apos;No connection to the server.&apos;)
+        	}
+        }
+    };
+    xhr.send(JSON.stringify({ &quot;logtime&quot;:logtime, &quot;age&quot;:age, &quot;gender&quot;:gender, &quot;interests&quot;:interests, &quot;signed&quot;:signed}));
+}</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.5.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

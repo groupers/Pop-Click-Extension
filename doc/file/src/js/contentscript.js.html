@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/js/contentscript.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  </ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/js/contentscript.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/** Using content script as a front end processing tier **/
+// You have to update variable names
+var suggestedElements;
+var str = [], string = &quot;&quot;, inListElements = 1;
+var listofnameElements = [];
+var mapOfElements = new Map();
+
+//Adding extra properties
+var btnabox = 10;
+//Not necessary
+var array = new Array();
+array[0] = document.location.href;
+var stringifiedArray = JSON.stringify(array);
+var div = document.createElement(&quot;div&quot;); 
+var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
+var feedback_info_timestamp = null, feedback_info_link = null;
+var iziToasts = new Map();
+var sentObjects = new Map();
+
+chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
+
+	if(msg.action == &apos;refresh_dialog&apos;) {
+		generateDialogContent(msg.url);
+		window.localStorage[&apos;location&apos;] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
+	}
+
+	if(msg.action === &apos;show_dialog&apos;) {
+		document.getElementById(&apos;TheDialogBox&apos;).style.display = &apos;&apos;
+	}
+
+	if(msg.action == &apos;sendpage_info&apos;) {
+		var objects = [];
+		for (i = 0 ; i &lt; document.getElementsByTagName(&apos;a&apos;).length &amp;&amp; i &lt; 500; i++) {
+			var curr = document.getElementsByTagName(&apos;a&apos;)[i]
+			var arr = []
+			arr.push(document.location.href)
+			arr.push(curr.href)
+			arr.push(curr.innerText.trim())
+			arr.push(getPath(curr))
+			if (curr.className !== &apos;btnabox&apos;) {
+				objects.push(arr)
+			}
+		}
+		sentObjects[document.location.href] = objects;
+		sendResponse({objects: objects});
+	}
+	if(msg.action == &apos;feedback_info&apos;) {
+		var toastall = false;
+		// Add option if toasts should be visible
+		if(feedback_info_timestamp === null || (new Date() - feedback_info_timestamp)/ 1000.0 &gt; 2.0){
+			feedback_info_timestamp = new Date();
+			feedback_info_link = document.location.href;
+			toastall = true;
+		}
+		if(toastall == true) {
+			var timeout = 7000, changed = false;
+			if (msg.numbers != -1 &amp;&amp; sentObjects[document.location.href].length &gt;0) {
+				if(msg.update &amp;&amp; document.getElementsByClassName(&apos;iziToast-body&apos;).length &gt; 0){
+					iziToast.destroy();
+				}
+				if(document.getElementsByClassName(&apos;iziToast-body&apos;).length == 0 || changed == true) {
+					for(i=0; i&lt;msg.numbers.length &amp;&amp; i&lt;5; i++) {
+						var elem = sentObjects[document.location.href][msg.numbers[i]]
+						// Have to fix the fact of being sent back a random list with an item 0
+						if(typeof elem != &apos;undefined&apos; &amp;&amp; elem[2].replace(/\s/g,&apos; &apos;).length != 0){
+							var message = elem[2].trim();
+							if (message.length &gt; 15){
+								message = message.substring(0,15)+&quot;...&quot;;
+							}
+							if(i&lt;2){
+								timeout = 100000;
+							}else{
+								timeout = 10000;
+							}
+							iziToast.show({
+								title: &apos;[&apos;+i+&apos;]&apos;,
+								message: message,
+								timeout: timeout,
+								onOpen: function(instance, toast){
+									iziToasts[&apos;[&apos;+i+&apos;]&apos;] = elem[1]
+									console.log(instance)
+								},
+								onClose: function(instance, toast, closedBy){
+						        console.info(&apos;closedBy: &apos; + closedBy); // tells if it was closed by &apos;drag&apos; or &apos;button&apos;
+
+						        console.log(&quot;item removed&quot;+instance[&apos;title&apos;])
+						        delete iziToasts[instance[&apos;title&apos;]]
+						    }
+						});
+
+						}
+					}
+				}
+			}
+		}
+	}
+});
+
+//HTML DOM ELEMENT SHORTS
+var p = 0, a = 1, d = 2, ac = 6, ul = 4, li = 5, script = 7, link = 8;
+// Generate DOM element &lt;p&gt;
+function e(elementShort, text, href, ID, classname, order, kind){
+	var returnvalue = &quot;&quot;;
+	text = text.trim();
+	if (text.length == 0 || typeof text === &apos;undefined&apos;) return ;
+	if (typeof ID === &apos;undefined&apos;) { ID = &apos;&apos;; }
+	if (typeof href === &apos;undefined&apos;) { href = &apos;&apos;; }
+	if (typeof classname === &apos;undefined&apos;) { classname = &apos;&apos;; }
+	if (typeof order === &apos;undefined&apos;) { order = &apos;&apos;; }
+	if (typeof kind === &apos;undefined&apos;) { kind = &apos;&apos;; }
+	if (typeof text === &apos;undefined&apos;) { text = &apos;&apos;; }
+	switch(elementShort) {
+		case 0:
+		returnvalue = &quot;&lt;p&gt;&quot; + text + &quot;&lt;/p&gt;&quot;;
+		break;
+	    case 1:// set 2 options
+	    if (text.length &gt; 25) {
+	    	text = text.substring(0,25)+&quot;...&quot; ;
+	    }
+	    if (order != undefined) {
+	    	text +=&quot;&lt;span&gt; [&quot;+order%10+&quot;]&lt;/span&gt;&quot;;
+	    	ID = &quot;DialogBoxAnchor&quot;+order%10;
+	    }
+	    returnvalue = (ID === &quot;&quot;)? &apos;&lt;a href=&quot;&apos; + href +&apos;&quot;&gt;&apos; + text + &quot;&lt;/a&gt;&quot; : &apos;&lt;a id=&quot;&apos; + ID + &apos;&quot; href=&quot;&apos; + href +&apos;&quot;&gt;&apos; + text + &apos;&lt;/a&gt;&apos;
+	    break;
+	    case 2:
+	    returnvalue = (ID === &quot;&quot;)? &apos;&lt;div&gt;&apos; + text + &quot;&lt;/div&gt;&quot; : &apos;&lt;div id=&quot;&apos; + ID + &apos;&quot;&gt;&apos; + text + &apos;&lt;/div&gt;&apos;
+	    break;
+	    case 4:
+	    returnvalue =&apos;&lt;ul&gt;&apos; + text + &apos;&lt;/ul&gt;&apos;
+	    break;
+	    case 5:
+	    returnvalue = &apos;&lt;li&gt;&apos; + text + &apos;&lt;/li&gt;&apos;
+	    break;
+	    case 6:
+	    returnvalue = &apos;&lt;a id=&quot;&apos; + ID + &apos;&quot; onclick=&quot;&apos; + href +&apos;&quot;&gt;&apos; + text + &apos;&lt;/a&gt;&apos;
+	    break;
+	    case 7:
+	    returnvalue = &apos;&lt;script src=&quot;&apos;+ href +&apos;&quot;&gt;&lt;/script&gt;&apos;
+	    break;
+	    case 8:
+	    returnvalue = &apos;&lt;link rel=&quot;stylesheet&quot; href=&quot;&apos; +href + &apos;&quot;&gt;&apos;
+	    break;
+	    case 10:
+	    return
+	    default:
+	    returnvalue = text;
+	    break;
+	}
+	if(classname) {
+		returnvalue = returnvalue.splice(returnvalue.indexOf(&apos;&gt;&apos;), 0, &apos; class=&quot;&apos; + classname + &apos;&quot;&apos;);
+	}
+	if(kind) {
+		returnvalue = returnvalue.splice(returnvalue.indexOf(&apos;&gt;&apos;), 0, &apos; kind=&quot;&apos; + kind + &apos;&quot;&apos;);
+	}
+	return returnvalue;
+}
+
+//This only works if ButtonCollection already exists
+function generateDialogContent(url) {
+	if (typeof url === &apos;undefined&apos;) { 
+		url = &apos;&apos;; 
+	} else {
+		var array = new Array();
+		array[0] = url;
+		stringifiedArray = JSON.stringify(array);
+	}
+	chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
+		highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
+		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
+		var dialogbuttons = document.getElementById(&quot;ButtonCollection&quot;);
+		if(dialogbuttons != null &amp;&amp; dialogbuttons.firstChild != null){
+			while (dialogbuttons.firstChild) {
+				dialogbuttons.removeChild(dialogbuttons.firstChild);
+			}
+			var randomListOfAnchors = []
+
+			for (i = 0 ; i &lt; document.getElementsByTagName(&apos;a&apos;).length; i++) {
+				if(!highest_clicks_href.contains(document.getElementsByTagName(&apos;a&apos;)[i])) {
+					randomListOfAnchors.push(i);
+				}
+			}
+			randomListOfAnchors[randomListOfAnchorsIterator]
+			var randomListOfAnchorsIterator = 0;
+			var dialog_elements = {}
+			for (i = 0; i &lt; 10; i++){
+				var text, href;
+				if(highest_clicks_text[i] != undefined) {
+					text = highest_clicks_text[i];
+					href = highest_clicks_href[i];
+					var anchor = e(a, text, href, &quot;&quot;, &quot;btnabox&quot;, i, &quot;pers&quot;);
+				} 
+				else {
+					var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
+					if(document.getElementsByTagName(&apos;a&apos;)[currentIndex]){
+						text = document.getElementsByTagName(&apos;a&apos;)[currentIndex].innerText.trim();
+						href = document.getElementsByTagName(&apos;a&apos;)[currentIndex].href;
+						var anchor = e(a, text, href, &quot;&quot;, &quot;btnabox&quot;, i);
+					}
+					randomListOfAnchorsIterator++;
+				}
+				if(dialog_elements[text] != href){
+					dialog_elements[text]= href;
+					dialogbuttons.innerHTML += anchor;
+				}
+			}
+			for(i = 0 ; i &lt; document.getElementsByClassName(&apos;btnabox&apos;).length; i++) {
+				var currentElement =document.getElementsByClassName(&apos;btnabox&apos;)[i];
+				if(currentElement.getAttribute(&apos;kind&apos;) === &apos;pers&apos;) {
+					currentElement.style.backgroundColor = &quot;rgb(76, 175, 80)&quot;;
+				}
+			}		  
+		}
+
+	});
+}
+
+main()
+function main(){
+
+	for (i=0; i &lt; (10 - highest_clicks_text.length) &amp;&amp; document.getElementsByTagName(&apos;a&apos;)[i]; i++) {
+		str.push(document.getElementsByTagName(&apos;a&apos;)[i]);
+	}
+	str.sort();
+	var pointer = 1;
+	if(str.length &gt;= 2) {
+		for (i=0; i &lt; str.length; i++) {
+			if(/(javascript\(.*\)|.*\/\#)$/.test(str[i].href)) {
+				str.remove(i);
+				i--;
+			}
+		}
+	}
+	for (i=0; i &lt; str.length; i++) {
+		var text = &quot;&quot;;
+		if(str[i].text.length == 0 &amp;&amp; str[i].title != &quot;&quot;) {
+			text = str[i].title;
+		} else {
+			text = str[i].text;
+		}
+		var currentElement = e(a, text, str[i].href, &quot;&quot;, &quot;btnabox&quot;, inListElements);
+		// Verifies if the element exists, in case some how in the handling something went wrong.
+		//Problem when the anchor tag starts with # for some reason.
+		//Example: https://developer.chrome.com/extensions/content_scripts#pi
+		if(currentElement || currentElement != &quot;&quot;) {
+			string += currentElement;
+			++inListElements;
+		}
+	}
+	for (i = 0; i &lt; 500 &amp;&amp; i &lt; document.getElementsByTagName(&apos;a&apos;).length; i++) {
+		var currentAnchor = document.getElementsByTagName(&apos;a&apos;)[i];
+		var currentElement = (currentAnchor.text).replace(/\s/g,&apos; &apos;);
+		if (!/(javascript\(.*\)|.*\/\#)$/.test(currentAnchor.href) || currentAnchor.className != &apos;btnabox&apos;) {
+			listofnameElements.push(currentElement);
+			mapOfElements.set(currentElement,currentAnchor.href);
+		}
+	}
+	createDialogBox()
+}
+
+function createDialogBox(){
+	var inputfield = &apos;&lt;input id=&quot;AwesompleteInputfield&quot; class=&quot;awesomplete&quot; data-autofirst placeholder=&quot;Insert Text to find what you wish for :&quot;/&gt;&apos;;
+	var dim_div = document.createElement(&quot;div&quot;);
+	document.body.appendChild(dim_div);
+	dim_div.id = &quot;pagecover&quot;
+	document.body.appendChild(div); 
+	div.id = &quot;TheDialogBox&quot;
+	div.innerHTML = e(d, e(ac, &quot;Close&quot;, &quot;closingBtnCollector()&quot;, &quot;ClosingBtnCollector&quot;, &quot;closingCollector&quot;),&quot;&quot;,&quot;DialogBoxHead&quot;,&quot;dialogBoxHead&quot;);
+	div.innerHTML += e(d, string, &quot;default&quot;, &quot;ButtonCollection&quot;, &quot;btncollector&quot;);
+	div.innerHTML += e(d,inputfield,&quot;DialogBoxFoot&quot;,&quot;dialogBoxFoot&quot;);
+	div.style.position = &quot;float&quot;;
+	div.style.left = &quot;50px&quot;;
+	div.style.display = &quot;none&quot;;
+	var input = document.getElementById(&quot;AwesompleteInputfield&quot;);
+	
+	new Awesomplete(input, {
+		// Remove duplicates
+		list: listofnameElements.filter( function( item, index, inputArray ) {
+           return inputArray.indexOf(item) == index;
+    }),
+		filter: function (text, input) {
+			if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 
+				&amp;&amp; ( pre_lev(text.toLowerCase(),input.toLowerCase())&gt;0 
+				&amp;&amp; pre_lev(text.toLowerCase(),input.toLowerCase()) &lt; 3) 
+				&amp;&amp; input.length &gt; 2){
+				input = text
+			}
+			return ((text.toLowerCase()).includes(input.toLowerCase()));
+		}
+	});
+
+	generateDialogContent();
+
+	var dialogBoxVisible = false;
+	// Observer for when the div element has it&apos;s class attribute altered
+	/** Observing the visibility of the dialog box **/
+	var observerDisplay = new MutationObserver(function(mutations) {
+		mutations.forEach(function(mutation) {
+			if( window.getComputedStyle(div).getPropertyValue(&apos;display&apos;) !== &apos;none&apos; 
+				&amp;&amp; mutation.attributeName === &apos;style&apos;) {
+				dialogBoxVisible = !dialogBoxVisible;
+			}
+		});
+	});
+	observerDisplay.observe(div, { attributes: true });
+}
+
+/* vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv vvvvvvvvvvv*/
+// Injecting script
+
+var s = document.createElement(&apos;script&apos;);
+s.src = chrome.extension.getURL(&apos;src/js/script.js&apos;);
+s.onload = function() {
+	this.remove();
+};
+
+// Add event listener for whatever click on anchor element send to  backend process
+(document.head || document.documentElement).appendChild(s);
+// //asynchronously load jQuery
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.5.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

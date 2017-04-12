@@ -22,6 +22,7 @@ function pre_lev(a, b) {
    }
    return min_v
 }
+
 /**
   Calculates levenshtein distance
   Params: String a, String b

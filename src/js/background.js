@@ -6,6 +6,7 @@ var PopClick_local_clickables = new localStorageDB("ClickTable", chrome.storage.
 var popclickhost = 'http://localhost:8000'
 var myURL = "about:blank"; // A default url just in case below code doesn't work
 var pageTab = {}
+
 if(PopClick_profile.isNew()) {
 	PopClick_profile.createTable("profile", ["token", "privatekey", "logtime"]);
 	PopClick_profile.commit();
@@ -109,6 +110,7 @@ function isBlockedURI(href, hostname) {
 		}).length)
 	}
 }
+
 function blockRequest(URI_href, URI_host, operation) {
 	console.log(URI_href+" "+URI_host+" "+operation);
 	if(operation == 1) {
@@ -293,6 +295,7 @@ function feedback(content_feedback, tabID, tabURL) {
 	});
 
 }
+
 function postFormatting(website, pagepath, page, elementhref, text, selector, clicks, operation, logtime) {
 	var profile_col = PopClick_profile.queryAll("profile")[0]
 	var profile = [profile_col.privatekey, logtime]

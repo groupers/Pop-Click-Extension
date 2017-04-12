@@ -1,10 +1,7 @@
-function getObjectFromHref(href) {
-	for( i=0; i < document.getElementsByTagName('a').length; i++) {
-		if(href === document.getElementsByTagName('a')[i].href) {
-			return document.getElementsByTagName('a')[i];
-		}
-	}
-}
+/** 
+* Returns today's date
+* @return {Date} today
+*/
 function getLogtime() {
 	var today = new Date()
 	var dd = today.getDate();
@@ -20,6 +17,12 @@ function getLogtime() {
 	return today
 }
 
+/** 
+* Return a statement indicating if a key exists in a map
+* @param {map} dictionary
+* @param {string} key 
+* @return {boolean}
+*/
 function containsKey(map, key) {
 	for(var prop in map) {
 		if(prop === key) {
@@ -29,8 +32,12 @@ function containsKey(map, key) {
 	return false;
 }
 
-//Acts as a CSS selector
-/** Allows use to uniquely identify an HTML element **/
+/**
+*Acts as a CSS selector, allows us to uniquely identify an HTML element.
+* Returns the HTML arborescence of the element	 
+* @param {DOM element} element
+* @return {string} path
+**/
 function getPath(element) {
 	var path, node = element;
 	while(node) {
@@ -46,7 +53,11 @@ function getPath(element) {
 	return path;
 }
 
-// Gets the index of the element among others who have the same nodeName
+/**
+* Returns the index of the element among others who have the same nodeName
+* @param {HTML Node} node
+* @return {number} (num|-1)
+**/
 function indexInParent(node) {
 	var children = node.parentNode.childNodes;
 	var num = 0;
@@ -59,7 +70,11 @@ function indexInParent(node) {
 	return -1;
 }
 
-// Get number of elements containing the same nodeName
+/**
+* Returns the number of elements containing the same nodeName
+* @param {HTML Node} node
+* @return {number} num
+**/
 function inParentSameNodeName(node) {
 	var children = node.parentNode.childNodes;
 	var num = 0;
