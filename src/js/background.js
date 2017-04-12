@@ -18,8 +18,8 @@ if(PopClick_local_clickables.isNew()) {
 	PopClick_local_clickables.createTable("pageselectable", ["pagehref", "elementhref", "text", "selector", "clicks"]);
 	PopClick_local_clickables.commit();
 }
-var profileToken = PopClick_profile.queryAll("profile")[0].token
-var profileAuth = PopClick_profile.queryAll("profile")[0].privatekey
+var profileToken = PopClick_profile.queryAll("profile")[0]
+var profileAuth = PopClick_profile.queryAll("profile")[0]
 
 function validAuthentication(validating){
 	if(validating == "Valid") {
@@ -30,9 +30,12 @@ function validAuthentication(validating){
 }
 
 function checkConnection(){
-	fetchValidStatus(popclickhost+"/popclick/api/validprofile/"+profileToken+"/", profileAuth, validAuthentication)
+	profile = PopClick_profile.queryAll("profile")[0]
+	if(profile && profile.privatekey && profile.token){
+		fetchValidStatus(popclickhost+"/popclick/api/validprofile/"+profile.token+"/", profile.privatekey, validAuthentication)
+	}
 }
-// checkConnection();
+checkConnection();
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	if(msg) {
