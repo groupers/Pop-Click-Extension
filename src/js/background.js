@@ -174,7 +174,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 		PopClick_profile.insertOrUpdate("profile", {} ,{token: ''+tok, privatekey: '', logtime: current_time});
 		PopClick_profile.commit();
 		profileToken = tok;
-		sendResponse("k");
+		sendResponse("created");
 		return true;
 	}
 	if(msg && msg.updateprivate) {

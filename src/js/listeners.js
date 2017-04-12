@@ -59,13 +59,7 @@ addEvent(document, "click", function(event) {
 						targetElement = parentElementA;
 					}
 					array[1] = targetElement.href;
-
-				// Have to add a condition for when there is no title nor text.
-				// Order : 1.Text, 2.title, 3.child alt, 4. URL compare, 5. tag
-				// Give option to modify name
-				if(targetElement && targetElement.innerText && targetElement.innerText.trim().length>0){
-					chrome.runtime.sendMessage({memo: ''+targetElement.innerText.trim()+''}, function(b) {});
-				}
+				
 				array[2] = targetElement.innerText.trim()|| "not-found"
 				if(targetElement.className != 'btnabox') {
 					// array[3] = getPath(targetElement);

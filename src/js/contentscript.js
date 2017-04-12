@@ -1,4 +1,3 @@
-
 /** Using content script as a front end processing tier **/
 // You have to update variable names
 var suggestedElements;
