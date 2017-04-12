@@ -1,6 +1,7 @@
 /**
   Applying levenshtein on every substring of a matching the size of b
-  Params: String a, String b
+  @Params {String} a
+  @Params {String} b
   Return: minimum levenshtein distance
 **/
 function pre_lev(a, b) {
@@ -25,7 +26,8 @@ function pre_lev(a, b) {
 
 /**
   Calculates levenshtein distance
-  Params: String a, String b
+  @Params {String} a
+  @Params {String} b
   Return: Levenshtein distance of a and b.
 **/
 function levenshtein_distance(a, b) {

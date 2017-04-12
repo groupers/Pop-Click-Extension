@@ -1,20 +1,25 @@
-/** Using content script as a front end processing tier **/
-// You have to update variable names
-var suggestedElements;
-var str = [], string = "", inListElements = 1;
+/**
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+* Main Content Script
+* The content script is used as front end processing tier 
+**/
+
+// All the text properties of the available anchor tags
 var listofnameElements = [];
+// Required by the listener.js
 var mapOfElements = new Map();
 
-//Adding extra properties
-var btnabox = 10;
-//Not necessary
-var array = new Array();
-array[0] = document.location.href;
-var stringifiedArray = JSON.stringify(array);
+// Main dialogBox Div
 var div = document.createElement("div"); 
-var historyBasedSuggestion, highest_clicks_text = new Array(), highest_clicks_href = new Array();
+
+var highest_clicks_text = new Array(), highest_clicks_href = new Array();
+var recommended_clicks = {}
+// Used by the toast Message action, monitoring time.
 var feedback_info_timestamp = null, feedback_info_link = null;
+// Toasts mapped to their respectful displayed values
 var iziToasts = new Map();
+// Items sent for recommendation requested by the sendpage_info Message action.
 var sentObjects = new Map();
 
 /** 
@@ -24,7 +29,7 @@ var sentObjects = new Map();
 * @params {sendResponse}
 * @message action handling:
 *	- refresh_dialog from -background.js
-*	- show_dialog	from -popup&popup_control.js
+*	- show_dialog	from -popup & popup_control.js
 *	- sendpage_info	from -background.js
 *	- feedback_info from -background.js
 **/
@@ -77,6 +82,9 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 				}
 				// If there is no existing toasts
 				if(document.getElementsByClassName('iziToast-body').length == 0) {
+					// For the dialogBox
+					var recommended_clicks_text = []
+					var recommended_clicks_href = []
 					// Create up to 5 toasts
 					for(i=0; i<msg.numbers.length && i<5; i++) {
 						var elem = sentObjects[document.location.href][msg.numbers[i]]
@@ -84,9 +92,13 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 						if(typeof elem != 'undefined' && elem[2].replace(/\s/g,' ').length != 0){
 							var message = elem[2].trim();
 							// If the text is too long
+							recommended_clicks_text.push(message)
+							recommended_clicks_href.push(elem[1])
 							if (message.length > 15){
 								message = message.substring(0,15)+"...";
 							}
+							// For the dialogBox
+
 							// For the top 2 elements set a longer duration
 							if(i<2){
 								timeout = 100000;
@@ -103,12 +115,15 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 									console.log(instance)
 								},
 								onClose: function(instance, toast, closedBy){
-						        delete iziToasts[instance['title']]
-						    }
-						});
+									delete iziToasts[instance['title']]
+								}
+							});
 
 						}
 					}
+					recommended_clicks[document.location.href] = [recommended_clicks_text, recommended_clicks_href];
+					// Refresh the dialogBox
+					generateDialogContent(document.location.href);
 				}
 			}
 		}
@@ -211,24 +226,27 @@ function e(elementShort, text, href, ID, classname, order, kind){
 *
 **/
 function generateDialogContent(url) {
+	var jsonArrayUrl;
 	// If there is no url set the url to an empty string
 	if (typeof url === 'undefined') { 
 		url = ''; 
 	} else {
 		// create a JSON object containing the string
-		var array = new Array();
-		array[0] = url;
-		stringifiedArray = JSON.stringify(array);
+		// var array = new Array();
+		// array[0] = [url];
+		jsonArrayUrl = JSON.stringify([url]);
 	}
+	console.log(recommended_clicks)
 	/**
 	* @action {chrome.runtime.sendMessage}
 	* @params {{string: JSON(url)}} {sendinginitialisation: stringifiedArray}
 	**/
-	chrome.runtime.sendMessage({sendinginitialisation: stringifiedArray}, function(x) {
+	chrome.runtime.sendMessage({sendinginitialisation: jsonArrayUrl}, function(x) {
 		// Retrieve elements text and href from callback
-		highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
-		highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
-
+		if(x && x.hc_href && x.hc_text){
+			highest_clicks_text = new Array(JSON.parse(x.hc_text))[0];
+			highest_clicks_href = new Array(JSON.parse(x.hc_href))[0];
+		}
 		var dialogbuttons = document.getElementById("ButtonCollection");
 		// If the dialogBox is empty generate content
 		if(dialogbuttons != null && dialogbuttons.firstChild != null){
@@ -251,23 +269,45 @@ function generateDialogContent(url) {
 						highest_clicks_href.remove(i)
 					}
 				}
+
 			}
+			var recommended_items = recommended_clicks[document.location.href];
+			if(recommended_items && recommended_items[0].length > 0 && typeof recommended_items[0][recommendedIterator] != 'undefined'){
+				for(i = 0 ; i < recommended_items[0].length; i++){
+					if(highest_clicks_text.contains(text.trim()) || highest_clicks_href.contains(href.trim())){
+						recommended_items[0].remove(i)
+						recommended_items[1].remove(i)
+					}
+				}
+			}
+
 			var randomListOfAnchorsIterator = 0;
+			var recommendedIterator = 0;
 			var dialog_elements = {}
 			// Creates an an anchor tag corresponding to the conventioned style with the given parameters
 			for (i = 0; i < 10; i++){
-				var text, href;
-				if(highest_clicks_text[i] != undefined) {
+				var text, href, anchor;
+				if(typeof highest_clicks_text[i] != 'undefined') {
 					text = highest_clicks_text[i];
 					href = highest_clicks_href[i];
-					var anchor = e(a, text, href, "", "btnabox", i, "pers");
+					anchor = e(a, text, href, "", "btnabox", i, "pers");
 				} 
+				else if(recommended_items && recommended_items[0].length >0 
+					&& typeof recommended_items[0][recommendedIterator] != 'undefined'){
+					text = recommended_items[0][recommendedIterator]
+					href = recommended_items[1][recommendedIterator]
+					anchor = e(a, text, href, "", "btnabox", i, "rec");
+					recommendedIterator++;
+				}
 				else {
 					var currentIndex = randomListOfAnchors[randomListOfAnchorsIterator];
 					if(document.getElementsByTagName('a')[currentIndex]){
 						text = document.getElementsByTagName('a')[currentIndex].innerText.trim();
+						if (text.length > 20){
+							text = text.substring(0,20)+"...";
+						}
 						href = document.getElementsByTagName('a')[currentIndex].href;
-						var anchor = e(a, text, href, "", "btnabox", i);
+						anchor = e(a, text, href, "", "btnabox", i);
 					}
 					randomListOfAnchorsIterator++;
 				}
@@ -281,6 +321,8 @@ function generateDialogContent(url) {
 				var currentElement =document.getElementsByClassName('btnabox')[i];
 				if(currentElement.getAttribute('kind') === 'pers') {
 					currentElement.style.backgroundColor = "rgb(76, 175, 80)";
+				}else if(currentElement.getAttribute('kind') === 'rec') {
+					currentElement.style.backgroundColor = "rgb(232, 149, 60)";
 				}
 			}		  
 		}
@@ -310,18 +352,24 @@ main()
 * 
 **/
 function main(){
+	// Initialising with 10 blank anchors
+	var emptySelectables = "";
+	for (i=1; i < 11; i++) {
+			emptySelectables += e(a, "initial", "none", "", "btnabox", i);
+	}
 	searchUtilityItems();
-	createDialogBox()
+	createDialogBox(emptySelectables);
 	generateDialogContent();
 }
 
 /**
 *Creates the DialogBox
+* @params: {string} initialEmptyAnchors 
 * @actions:
 *	-Initialises Awesomplete inputField
 *	- Adds a MutationObserver method
 **/
-function createDialogBox(){
+function createDialogBox(initialEmptyAnchors){
 	// DOM formatted input field
 	var inputfield = '<input id="AwesompleteInputfield" class="awesomplete" data-autofirst placeholder="Insert Text to find what you wish for :"/>';
 	// Creates the Dialog Box
@@ -331,7 +379,7 @@ function createDialogBox(){
 	document.body.appendChild(div); 
 	div.id = "TheDialogBox"
 	div.innerHTML = e(d, e(ac, "Close", "closingBtnCollector()", "ClosingBtnCollector", "closingCollector"),"","DialogBoxHead","dialogBoxHead");
-	div.innerHTML += e(d, e(a, "initial", "", "", "btnabox",0), "default", "ButtonCollection", "btncollector");
+	div.innerHTML += e(d, initialEmptyAnchors, "default", "ButtonCollection", "btncollector");
 	div.innerHTML += e(d,inputfield,"DialogBoxFoot","dialogBoxFoot");
 	div.style.position = "float";
 	div.style.left = "50px";
@@ -341,18 +389,18 @@ function createDialogBox(){
 	new Awesomplete(input, {
 		// Remove duplicates
 		list: listofnameElements.filter( function( item, index, inputArray ) {
-           return inputArray.indexOf(item) == index;
-    }),
+			return inputArray.indexOf(item) == index;
+		}),
 		filter: function (text, input) {
 			if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 
 				&& ( pre_lev(text.toLowerCase(),input.toLowerCase())>0 
-				&& pre_lev(text.toLowerCase(),input.toLowerCase()) < 3) 
+					&& pre_lev(text.toLowerCase(),input.toLowerCase()) < 3) 
 				&& input.length > 2){
 				input = text
-			}
-			return ((text.toLowerCase()).includes(input.toLowerCase()));
 		}
-	});
+		return ((text.toLowerCase()).includes(input.toLowerCase()));
+	}
+});
 	// Allows monitor the DialogBox activity
 	var dialogBoxVisible = false;
 	// Observer for when the div element has it's class attribute altered
@@ -362,8 +410,8 @@ function createDialogBox(){
 			if( window.getComputedStyle(div).getPropertyValue('display') !== 'none' 
 				&& mutation.attributeName === 'style') {
 				dialogBoxVisible = !dialogBoxVisible;
-			}
-		});
+		}
+	});
 	});
 	observerDisplay.observe(div, { attributes: true });
 }
