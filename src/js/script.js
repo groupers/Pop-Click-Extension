@@ -1,21 +1,6 @@
 
 /** Injected script **/
 
-//=> Good idea to prompt only the parts that it doesn't share in common 
-function getAllElementsWithAttribute(attribute) {
-  var matchingElements = [];
-  var allElements = document.getElementsByTagName('*');
-  for (var i = 0, n = allElements.length; i < n; i++)
-  {
-    if (allElements[i].getAttribute(attribute) !== null)
-    {
-      // Element exists with attribute. Add to array.
-      matchingElements.push(allElements[i]);
-    }
-  }
-  return matchingElements;
-}
-
 /** Closes the Dialog **/
 function closingBtnCollector() {
 	document.getElementById('TheDialogBox').style.display = 'none';

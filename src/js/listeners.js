@@ -1,8 +1,11 @@
-//Add algorithm method to select the element with the most caracters :
-//Order of the words, order of the letters, words in common, letters in common.
 
 // Key press listener on enter key
-
+/**
+* Event Listener
+* callback @params {event} e
+* handles: keypress
+* 
+**/
 addEvent(document, "keypress", function(e) {
 	e = e || window.event;
 	if(e.keyCode == "13") {
@@ -14,16 +17,12 @@ addEvent(document, "keypress", function(e) {
 			array[1] = redirectPath;
 			array[2] = inputfield.value.trim();
 			var stringifiedArray = JSON.stringify(array);
-			console.log(stringifiedArray)
 			chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
-				if(b && b.backgroundMsg) {
-					console.log(b.backgroundMsg);
-				}
 			});    		
 			document.location = redirectPath;
 		}
 	}
-	if(+e.keyCode > 47 && +e.keyCode < 58 && +e.altKey +e.shiftKey) {
+	if(+e.keyCode > 47 && +e.keyCode < 58 && +e.altKey) {
 		//Add if shortcut click option is activated
 		if(Object.keys(iziToasts).length > 0){
 			if(typeof iziToasts['['+(e.keyCode-48)+']'] !== 'undefined'){
@@ -75,10 +74,6 @@ addEvent(document, "click", function(event) {
 				//Have to make sure it matches run time : Test if link clicked in fb message.
 				if(stringifiedArray != null){
 					chrome.runtime.sendMessage({sendingevent: stringifiedArray}, function(b) {
-						if(b && b.backgroundMsg){
-							console.log(b.backgroundMsg);
-						}
-						console.log('Callback object just above');
 					});
 				}
 			}
