@@ -1,12 +1,17 @@
-/** Using background to handle background task which do not require to be processed on each page **/ 
-// Initialise. If the database doesn't exist, it is created
+/**
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+* Background Script
+* Handle background task which do not require to be processed on each page 
+* The content script is used as front end processing tier 
+**/
 
 var PopClick_profile = new localStorageDB("Profile", chrome.storage.local);
 var PopClick_local_clickables = new localStorageDB("ClickTable", chrome.storage.local);
 var popclickhost = 'http://localhost:8000'
 var myURL = "about:blank"; // A default url just in case below code doesn't work
 var pageTab = {}
-
+// Initialise database tables.
 if(PopClick_profile.isNew()) {
 	PopClick_profile.createTable("profile", ["token", "privatekey", "logtime"]);
 	PopClick_profile.commit();
@@ -51,6 +56,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	return true;
 });
 
+// Requesting statement if item is blocked
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	if(msg.isBlocked == "webpage") {
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -93,6 +99,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	} 
 });
 
+/**
+* Method that checks if the website or webpage is blocked
+* Used by the BackgroundScript only, to avoid post requests
+* @params {string} href , page uri
+* @params {string} hostname , website hostname
+* @returns {boolean} if element is blocked
+**/
 function isBlockedURI(href, hostname) {
 	if(typeof hostname == 'undefined') {
 		hostname = "";
@@ -111,6 +124,12 @@ function isBlockedURI(href, hostname) {
 	}
 }
 
+/**
+* Method that blocks toats to be  fired from the webpage or websites
+* @params {string} URI_href
+* @params {string} URI_host
+* @params {number} operation
+**/
 function blockRequest(URI_href, URI_host, operation) {
 	console.log(URI_href+" "+URI_host+" "+operation);
 	if(operation == 1) {
@@ -141,8 +160,16 @@ function blockRequest(URI_href, URI_host, operation) {
 		}))
 	}
 }
-
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdated should fire when the selected tab is changed or a link is clicked 
+/**
+* Tabs on update change listener
+* onUpdated should fire when the selected tab is changed or a link is clicked 
+* We 
+* @action {chrome.tabs.onUpdate}
+* @message action handling:
+*	- sendpage_info	to -contentscript.js
+*		@calls: postPageObjects, sends page items
+**/
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { 
 	chrome.tabs.getSelected(null, function(tab) {
 		myURL = tab.url;
 			chrome.tabs.sendMessage(tabId, {action: "refresh_dialog", url: myURL}, function(response) {
@@ -165,17 +192,23 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) { // onUpdate
 // Since asynchronous task involving Database queries seem to create issues with the message parsing
 // A persistent copy of the blocked websites/webpages is hold.
 
-
-/** Handles profile **/
+/** 
+* Handles profile exchanges
+* @action {chrome.runtime.onMessage}
+* @databaseAction create or update profile
+* @message action handling:
+*   -createprofile from -popup.js
+*		@Response: confirmation
+*	-updateprivate from -popup.js
+**/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	var current_time = getLogtime();
 	if(msg && msg.createprofile) {
 		var profile = new Array(JSON.parse(msg.createprofile));
-		var tok = profile[0][0]
-		console.log(tok)
-		PopClick_profile.insertOrUpdate("profile", {} ,{token: ''+tok, privatekey: '', logtime: current_time});
+		var token = profile[0][0]
+		PopClick_profile.insertOrUpdate("profile", {} ,{token: ''+token, privatekey: '', logtime: current_time});
 		PopClick_profile.commit();
-		profileToken = tok;
+		profileToken = token;
 		sendResponse("created");
 		return true;
 	}
@@ -189,10 +222,18 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 		PopClick_profile.commit();
 	}
 });
-/** Handles selectable elements **/
+
+/** 
+* Handles selectable elements
+*
+*
+* 
+**/
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	var content, website, pagepath, page, operation, pageobject, sendlogtime, sendclicks = 1;
+
 	if (msg && msg.sendingevent) {
+
 		content =  new Array(JSON.parse(msg.sendingevent))[0];
 		page = ''+content[0];
 		var elementhref = ''+content[1];
@@ -227,38 +268,40 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 				if(selector === "btnabox-element") {
 					selector = current_selector;
 				}
-					//Should check for all existing_records. In case we add some later on
-					if(text === "not-found" && existing_record[0].text != "not-found") {
-						text = current_text;
-					}
-					PopClick_local_clickables.update("pageselectable", {  
-						pagehref: page,
-						elementhref: elementhref,
-						text: text,
-						selector: selector
-					}, function(row) {
+				//Should check for all existing_records. In case we add some later on
+				if(text === "not-found" && existing_record[0].text != "not-found") {
+					text = current_text;
+				}
+				PopClick_local_clickables.update("pageselectable", {  
+					pagehref: page,
+					elementhref: elementhref,
+					text: text,
+					selector: selector
+					},
+					function(row) {
 						row.clicks = ++current_clicks;
-						    // the update callback function returns to the modified record
-						    sendclicks = row.clicks;
-						    return row;
-						});
-					operation = "update";
-				}
-				PopClick_local_clickables.commit();
-				PopClick_profile.update("profile", function(row) {
-					row.logtime = getLogtime();
-					sendlogtime = row.logtime;
-				});
-				PopClick_profile.commit();
-				if(typeof profileToken != 'undefined') {
-					postFormatting(website, pagepath, page, elementhref, text, selector, sendclicks, operation, sendlogtime)
-				}
+					    // the update callback function returns to the modified record
+					    sendclicks = row.clicks;
+					    return row;
+					});
+				operation = "update";
 			}
-		} else if(msg && msg.sendinginitialisation) {
-			content = new Array(JSON.parse(msg.sendinginitialisation));
-			var highest_clicks_text = new Array();
-			var highest_clicks_href = new Array();
-			page = ''+content[0]
+			PopClick_local_clickables.commit();
+			PopClick_profile.update("profile", function(row) {
+				row.logtime = getLogtime();
+				sendlogtime = row.logtime;
+				});
+			PopClick_profile.commit();
+			if(typeof profileToken != 'undefined') {
+				postFormatting(website, pagepath, page, elementhref, text, selector, sendclicks, operation, sendlogtime)
+			}
+		}
+
+	} else if(msg && msg.sendinginitialisation) {
+		content = new Array(JSON.parse(msg.sendinginitialisation));
+		var highest_clicks_text = new Array();
+		var highest_clicks_href = new Array();
+		page = ''+content[0]
 		//Top 10 different
 		var page_existing_top_ten_elements  = PopClick_local_clickables.queryAll("pageselectable", {
 			query: {pagehref: page}, sort: [["ID","DESC"], ["clicks", "DESC"]], distinct: ["elementhref","text"]
@@ -273,11 +316,25 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	}
 });
 
+/**
+* Method that format's the POST request for sending an element to the recommendation system
+* @params {string} token
+* @params {string} auth
+* @params {Map} objects
+* @params {number} tabID
+* @params {string} tabURL
+**/
 function postPageObjects(token, auth, objects, tabID, tabURL) {
 	var jsonObj = JSON.stringify({"profile":auth, "pageobjects":objects});
 	postSendObject(token, jsonObj, "suggestion", tabID, tabURL, feedback)
 }
 
+/**
+* Method used as a callback which allows the creation of the toasts
+* @params {JSON Array} content_feedback ordered list of recommendations
+* @params {number} tabID
+* @params {string} tabURL
+**/
 function feedback(content_feedback, tabID, tabURL) {
 	console.log(content_feedback)
 	var update = false;

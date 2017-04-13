@@ -22,14 +22,16 @@ var iziToasts = new Map();
 // Items sent for recommendation requested by the sendpage_info Message action.
 var sentObjects = new Map();
 window.localStorage['location'] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
+
 /** 
 * Content script onMessage listener
 * @params {msg}
 * @params {sender}
 * @params {sendResponse}
+* @action {chrome.runtime.sendMessage}
 * @message action handling:
 *	- refresh_dialog from -background.js
-*	- show_dialog	from -popup & popup_control.js
+*	- show_dialog	from -popup.js & popup_control.js
 *	- sendpage_info	from -background.js
 *	- feedback_info from -background.js
 **/
@@ -332,7 +334,7 @@ function generateDialogContent(url) {
 }
 
 /**
-*Initialises the listofnameElements which is used by the search utility
+* Method: Initialises the listofnameElements which is used by the search utility
 **/
 function searchUtilityItems(){
 	listofnameElements = [];
