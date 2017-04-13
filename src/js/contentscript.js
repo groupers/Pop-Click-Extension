@@ -21,7 +21,7 @@ var feedback_info_timestamp = null, feedback_info_link = null;
 var iziToasts = new Map();
 // Items sent for recommendation requested by the sendpage_info Message action.
 var sentObjects = new Map();
-
+window.localStorage['location'] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
 /** 
 * Content script onMessage listener
 * @params {msg}
@@ -263,7 +263,7 @@ function generateDialogContent(url) {
 					randomListOfAnchors.push(i);
 				}
 				// Assuring we have text for the given suggestion
-				if(highest_clicks_text.length > (i+1)){
+				if(highest_clicks_text.length >= (i+1)){
 					if(highest_clicks_text[i] == 'not-found' || highest_clicks_href[i] == ""){
 						highest_clicks_text.remove(i)
 						highest_clicks_href.remove(i)
@@ -271,10 +271,11 @@ function generateDialogContent(url) {
 				}
 
 			}
+			// Remove the common item between what is recommended and the item popularity of the users
 			var recommended_items = recommended_clicks[document.location.href];
 			if(recommended_items && recommended_items[0].length > 0 && typeof recommended_items[0][recommendedIterator] != 'undefined'){
 				for(i = 0 ; i < recommended_items[0].length; i++){
-					if(highest_clicks_text.contains(text.trim()) || highest_clicks_href.contains(href.trim())){
+					if(highest_clicks_text.contains(text) || highest_clicks_href.contains(href)){
 						recommended_items[0].remove(i)
 						recommended_items[1].remove(i)
 					}
@@ -340,7 +341,7 @@ function searchUtilityItems(){
 		var currentElement = (currentAnchor.text).replace(/\s/g,' ');
 		if (!/(javascript\(.*\)|.*\/\#)$/.test(currentAnchor.href) || currentAnchor.className != 'btnabox') {
 			listofnameElements.push(currentElement);
-			mapOfElements.set(currentElement,currentAnchor.href);
+			mapOfElements.set(currentElement, currentAnchor.href);
 		}
 	}
 }

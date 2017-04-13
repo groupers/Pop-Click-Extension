@@ -2,7 +2,6 @@
 //Order of the words, order of the letters, words in common, letters in common.
 
 // Key press listener on enter key
-window.localStorage['location'] = JSON.stringify([document.location.hostname, document.location.pathname, document.location.href])
 
 addEvent(document, "keypress", function(e) {
 	e = e || window.event;
