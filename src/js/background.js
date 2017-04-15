@@ -363,12 +363,17 @@ function postFormatting(website, pagepath, page, elementhref, text, selector, cl
 	postSendObject(profile_col.token, jsonObj, "add","","", console.log)
 }
 
+
 function postSendObject(token, selectable, task, tabID, tabURL, callback) {
 	var postUrl = "none";
 	if (task === "add") {
 		postUrl = popclickhost+'/popclick/api/add/'+token+'/';
+		console.log("PAGEOBJECT")
+    	console.log(selectable)
 	}else if(task === "suggestion") {
 		postUrl = popclickhost+'/popclick/api/suggestion/'+token+'/';
+		console.log("SUGGESTION")
+    	console.log(selectable)
 	}
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
@@ -385,6 +390,7 @@ function postSendObject(token, selectable, task, tabID, tabURL, callback) {
     	}
     };
     xhr.timeout = 5000;
+    // Sending selectable
     xhr.send(selectable);
 
 }

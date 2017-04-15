@@ -397,11 +397,11 @@ function createDialogBox(initialEmptyAnchors){
 		filter: function (text, input) {
 			if ((text.toLowerCase()).indexOf(input.toLowerCase()) == -1 
 				&& ( pre_lev(text.toLowerCase(),input.toLowerCase())>0 
-					&& pre_lev(text.toLowerCase(),input.toLowerCase()) < 3) 
-				&& input.length > 2){
+					&& pre_lev(text.toLowerCase(),input.toLowerCase()) < 2) 
+				&& input.length > 3){
 				input = text
-		}
-		return ((text.toLowerCase()).includes(input.toLowerCase()));
+			}
+			return ((text.toLowerCase()).includes(input.toLowerCase()));
 	}
 });
 	// Allows monitor the DialogBox activity

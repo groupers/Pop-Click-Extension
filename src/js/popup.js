@@ -3,8 +3,6 @@ var chips = document.getElementsByClassName('chip')
 var genders = ["Female","Male","Other","Irrelevant"]
 var sizeSwitch = false;
 var popclickhost = 'http://localhost:8000';
-//Should pull from server the data tags
-
 $(document).ready(function() {
 	$('select').material_select();
 	$('.chips').material_chip();
@@ -164,6 +162,10 @@ function initialPost() {
 	postAccountCreation(getLogtime(), age, initialInterests(), gender, signed, initialResponse);
 }
 
+/**
+* Checks if the element is availables
+* @Params : {DOM element} obj
+**/
 function displayElement(obj) {
 	var obj = document.getElementById(obj);
 	if (obj.style.visibility == 'visible') {
