@@ -1,8 +1,13 @@
-
+/**
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+* js/Popup.js
+**/
 var chips = document.getElementsByClassName('chip')
 var genders = ["Female","Male","Other","Irrelevant"]
 var sizeSwitch = false;
 var popclickhost = 'http://localhost:8000';
+// interests listener
 $(document).ready(function() {
 	$('select').material_select();
 	$('.chips').material_chip();
@@ -92,7 +97,7 @@ function showDialog() {
 		chrome.tabs.sendMessage(activeTab.id, {action: "show_dialog"});
 	});
 }
-
+// Dom click listener limiting movement on page
 document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById('initialForm').addEventListener('submit', initialPost)
    // When the user ticks to agree on the contract
@@ -119,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
    })
 });
 var spinnerState = false;
-
+// Switching views
 function flipInitialState() {
 	var middle = document.getElementById('middle');
 	var bottom = document.getElementById('bottom');
@@ -143,7 +148,7 @@ function flipInitialState() {
 	}
 	sizeSwitch = !sizeSwitch;
 }
-
+// First Interests
 function initialInterests() {
 	var interests = []
 	Array.from(chips).forEach(function(element) {
@@ -153,7 +158,7 @@ function initialInterests() {
 	})
 	return interests
 }
-
+// Information post
 function initialPost() {
 	event.preventDefault()
 	var age = document.getElementById('in_age').value
@@ -175,7 +180,7 @@ function displayElement(obj) {
 		obj.style.visibility = 'visible';
 	}
 }
-
+// First response request, store token
 function initialResponse(str) {
 	var profile = new Array();
 	profile[0] = JSON.parse(str).profile
@@ -199,7 +204,6 @@ function handleError(error) {
 	// If invalid age, gender, not signed flip to first view
 	// If invalid interests, flip to second view if necessary
 	console.log(JSON.parse(error)['profile_error'])
-	console.log('return value above')
 	var error_call =JSON.parse(error)['profile_error']
 	var errcodesWindow1 = ["INVALID_AGE","INVALID_GENDER","NOT_SIGNED","MISSING_ATTRIBUTE"]
 	if(errcodesWindow1.indexOf(error_call) != -1 && !atInitialPage()) {
@@ -221,9 +225,8 @@ function handleError(error) {
 		// Should be impossible 
 		publishError('Contact support.')
 	}
-	console.log(atInitialPage()+"message")
 }
-
+// Handle error delay
 function publishError(message, time) {
 	
 	if(typeof time == 'undefined') {
@@ -234,14 +237,14 @@ function publishError(message, time) {
 	Materialize.toast(message, time)
 
 }
-
+// Is at the initialapge
 function atInitialPage(){
 
 	return (+($('#interests').is(":visible")) + 1)%2
 
 }
 
-
+// Logging handle
 function logging(tes) {
 
 	tes = JSON.parse(tes);
@@ -251,7 +254,7 @@ function logging(tes) {
 	chrome.browserAction.setPopup({popup: "src/view/popup_control.html"})
 
 }
-
+// Fetch content
 function fetchFileContent(URL, cb) {
 	var xhr = new XMLHttpRequest()
 	xhr.ontimeout = function() {

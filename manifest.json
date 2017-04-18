@@ -28,6 +28,9 @@
       ]
 
   }],
+  "icons": {
+    "128": "src/images/PopClick.png"
+  },
   "browser_action": {
     "default_icon": "src/images/PopClick.png",
     "default_popup": "src/view/popup.html"

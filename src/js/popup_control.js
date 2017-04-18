@@ -1,7 +1,8 @@
 /**
-This is for content control
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+This is for content control of the popup
 **/
-
 $( document ).ready(function() {
 	getToken();
 	blockedStatus();
@@ -9,10 +10,12 @@ $( document ).ready(function() {
 		showDialog();
 	});
 });
+// Item is blocked
 function blockedStatus() {
 	isBlockedRequest('webpage')
 	isBlockedRequest('website')
 }
+// Request if page/websites is blocked
 function isBlockedRequest(siteorpage) {
 	var response;
 	chrome.runtime.sendMessage({isBlocked: siteorpage}, function(r) {
@@ -31,7 +34,7 @@ function isBlockedRequest(siteorpage) {
 		}
 	});
 }
-
+// Receive token
 function getToken() {
 	chrome.runtime.sendMessage({getToken: "head"}, function(response) {
 		if(document.getElementById('ptoken')){
@@ -44,10 +47,11 @@ function getToken() {
 	});
 }
 
+// Add page to blocked state
 function addBlockedWebpage() {
 	chrome.runtime.sendMessage({block_webpage: "head"}, function(response) {});
 }
-
+// Add websites to blocked state
 function addBlockedWebsite() {
 	chrome.runtime.sendMessage({block_website: "head"}, function(response) {});
 }

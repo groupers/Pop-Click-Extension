@@ -1,3 +1,8 @@
+/**
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+* Handle the first formatting of the dialog box.
+**/
 $(function(){
 	var setTimerExpiration = false, regularStartRender;
 	// If the window has never been resized then we might have the dialogBox uncentered

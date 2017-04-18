@@ -114,7 +114,6 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 								timeout: timeout,
 								onOpen: function(instance, toast){
 									iziToasts['['+i+']'] = elem[1]
-									console.log(instance)
 								},
 								onClose: function(instance, toast, closedBy){
 									delete iziToasts[instance['title']]
@@ -238,7 +237,6 @@ function generateDialogContent(url) {
 		// array[0] = [url];
 		jsonArrayUrl = JSON.stringify([url]);
 	}
-	console.log(recommended_clicks)
 	/**
 	* @action {chrome.runtime.sendMessage}
 	* @params {{string: JSON(url)}} {sendinginitialisation: stringifiedArray}

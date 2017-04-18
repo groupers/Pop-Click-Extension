@@ -1,3 +1,8 @@
+/**
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+* Helper methods
+**/
 /** 
 * Returns today's date
 * @return {Date} today

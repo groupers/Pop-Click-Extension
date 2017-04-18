@@ -1,3 +1,9 @@
+/**
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+* Listeners File
+* This file comprises the event handlers for the anchors tags, toasts and search utility.
+**/
 
 // Key press listener on enter key
 /**

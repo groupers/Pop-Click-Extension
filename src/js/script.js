@@ -1,5 +1,8 @@
-
-/** Injected script **/
+/**
+* ©Copyrights, all rights reserved.
+* @author: Phileas Hocquard 
+* Injected script 
+**/
 
 /** Closes the Dialog **/
 function closingBtnCollector() {

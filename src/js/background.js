@@ -336,7 +336,6 @@ function postPageObjects(token, auth, objects, tabID, tabURL) {
 * @params {string} tabURL
 **/
 function feedback(content_feedback, tabID, tabURL) {
-	console.log(content_feedback)
 	var update = false;
 	if(typeof pageTab[tabID] == 'undefined') {
 		pageTab[tabID] = tabURL
@@ -368,12 +367,8 @@ function postSendObject(token, selectable, task, tabID, tabURL, callback) {
 	var postUrl = "none";
 	if (task === "add") {
 		postUrl = popclickhost+'/popclick/api/add/'+token+'/';
-		console.log("PAGEOBJECT")
-    	console.log(selectable)
 	}else if(task === "suggestion") {
 		postUrl = popclickhost+'/popclick/api/suggestion/'+token+'/';
-		console.log("SUGGESTION")
-    	console.log(selectable)
 	}
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
